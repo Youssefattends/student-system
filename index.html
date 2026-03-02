@@ -14,14 +14,16 @@
 </head>
 <body>
 
+<!-- Login Page -->
 <div id="loginPage">
-    <h2>Login</h2>
+    <h2>Admin Login</h2>
     <input type="text" id="username" placeholder="Username">
     <input type="password" id="password" placeholder="Password">
     <br>
     <button onclick="login()">Login</button>
 </div>
 
+<!-- Main Page -->
 <div id="mainPage" class="hidden">
     <h2>Student Attendance & Quiz System</h2>
 
@@ -60,11 +62,15 @@
 let students = JSON.parse(localStorage.getItem("students")) || [];
 let editIndex = -1;
 
-function login() {
-    let user = document.getElementById("username").value;
-    let pass = document.getElementById("password").value;
+// Hard-coded admin credentials (change as needed)
+let adminUser = "admin";
+let adminPass = "1234";
 
-    if(user === "admin" && pass === "1234") {
+function login() {
+    let u = document.getElementById("username").value;
+    let p = document.getElementById("password").value;
+
+    if(u === adminUser && p === adminPass) {
         document.getElementById("loginPage").classList.add("hidden");
         document.getElementById("mainPage").classList.remove("hidden");
         loadTable();
@@ -89,13 +95,8 @@ function saveStudent() {
     }
 
     let student = { name, homework, attendance, quiz };
-
-    if(editIndex === -1) {
-        students.push(student);
-    } else {
-        students[editIndex] = student;
-        editIndex = -1;
-    }
+    if(editIndex === -1) students.push(student);
+    else { students[editIndex] = student; editIndex = -1; }
 
     localStorage.setItem("students", JSON.stringify(students));
     clearFields();
@@ -106,53 +107,49 @@ function loadTable() {
     let table = document.getElementById("dataTable");
     table.innerHTML = "";
 
-    students.forEach((s, index) => {
+    students.forEach((s, i) => {
         let row = table.insertRow();
         row.insertCell(0).innerHTML = s.name;
         row.insertCell(1).innerHTML = s.homework;
         row.insertCell(2).innerHTML = s.attendance;
         row.insertCell(3).innerHTML = s.quiz;
         row.insertCell(4).innerHTML =
-            `<button onclick="editStudent(${index})">Edit</button>
-             <button onclick="deleteStudent(${index})">Delete</button>`;
+            `<button onclick="editStudent(${i})">Edit</button>
+             <button onclick="deleteStudent(${i})">Delete</button>`;
     });
 }
 
-function editStudent(index) {
-    let s = students[index];
+function editStudent(i) {
+    let s = students[i];
     document.getElementById("name").value = s.name;
     document.getElementById("quiz").value = s.quiz;
     document.getElementById("homework").value = s.homework;
     document.getElementById("attendance").value = s.attendance;
-    editIndex = index;
+    editIndex = i;
 }
 
-function deleteStudent(index) {
-    students.splice(index, 1);
+function deleteStudent(i) {
+    students.splice(i,1);
     localStorage.setItem("students", JSON.stringify(students));
     loadTable();
 }
 
 function clearFields() {
-    document.getElementById("name").value = "";
-    document.getElementById("quiz").value = "";
-    document.getElementById("homework").value = "";
-    document.getElementById("attendance").value = "";
+    document.getElementById("name").value="";
+    document.getElementById("quiz").value="";
+    document.getElementById("homework").value="";
+    document.getElementById("attendance").value="";
 }
 
 function downloadExcel() {
     let csv = "Name,Homework,Attendance,Quiz\n";
-    students.forEach(s => {
-        csv += `${s.name},${s.homework},${s.attendance},${s.quiz}\n`;
-    });
-
-    let blob = new Blob([csv], { type: "text/csv" });
+    students.forEach(s => { csv += `${s.name},${s.homework},${s.attendance},${s.quiz}\n`; });
+    let blob = new Blob([csv], {type:"text/csv"});
     let link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = "students.csv";
     link.click();
 }
 </script>
-
 </body>
 </html>
