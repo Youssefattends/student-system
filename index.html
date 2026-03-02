@@ -154,11 +154,16 @@ function logout() {
 }
 
 function saveStudent() {
-
     let name = document.getElementById("name").value.trim();
     let section = document.getElementById("section").value;
     let studentPhone = document.getElementById("studentPhone").value.trim();
     let parentPhone = document.getElementById("parentPhone").value.trim();
+
+    // Auto-add '02' for parent phone if missing
+    if(!parentPhone.startsWith("02")) {
+        parentPhone = "02" + parentPhone;
+    }
+
     let homework = document.getElementById("homework").value;
     let attendance = document.getElementById("attendance").value;
     let quiz = document.getElementById("quiz").value;
@@ -216,23 +221,18 @@ function sendWhatsApp(phone, studentName) {
     // Remove all non-digit characters
     let cleanPhone = phone.replace(/\D/g,'');
 
-    // Fix Egyptian numbers
-    // If 10 digits starting with 0, replace leading 0 with 20
+    // Fix Egyptian numbers for WhatsApp
     if (cleanPhone.length === 10 && cleanPhone.startsWith("0")) {
         cleanPhone = "20" + cleanPhone.substring(1);
-    } 
-    // If 9 digits, add 20 (assume missing leading 0)
-    else if (cleanPhone.length === 9) {
+    } else if (cleanPhone.length === 9) {
         cleanPhone = "20" + cleanPhone;
     }
 
-    // Validate final number length
     if (cleanPhone.length < 11) {
         alert("Invalid phone number. Include full Egyptian number (e.g., 01012345678).");
         return;
     }
 
-    // Message with student name
     let message = `Hello, this is a message regarding ${studentName}.`;
     let url = "https://wa.me/" + cleanPhone + "?text=" + encodeURIComponent(message);
 
