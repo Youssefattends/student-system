@@ -1,0 +1,158 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Management System</title>
+    <style>
+        body { font-family: Arial; text-align: center; background:#f2f2f2; }
+        input, button, select { padding:8px; margin:5px; }
+        table { margin:auto; margin-top:20px; border-collapse:collapse; width:95%; background:white; }
+        th, td { border:1px solid black; padding:8px; }
+        th { background:#ddd; }
+        .hidden { display:none; }
+    </style>
+</head>
+<body>
+
+<div id="loginPage">
+    <h2>Login</h2>
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <br>
+    <button onclick="login()">Login</button>
+</div>
+
+<div id="mainPage" class="hidden">
+    <h2>Student Attendance & Quiz System</h2>
+
+    <input type="text" id="name" placeholder="Student Name">
+    <input type="number" id="quiz" placeholder="Quiz Degree">
+    <select id="homework">
+        <option value="">Homework</option>
+        <option>Done</option>
+        <option>Not Done</option>
+    </select>
+    <select id="attendance">
+        <option value="">Attendance</option>
+        <option>Present</option>
+        <option>Absent</option>
+    </select>
+    <br>
+    <button onclick="saveStudent()">Save Student</button>
+    <button onclick="downloadExcel()">Download Excel</button>
+    <button onclick="logout()">Logout</button>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Homework</th>
+                <th>Attendance</th>
+                <th>Quiz</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="dataTable"></tbody>
+    </table>
+</div>
+
+<script>
+let students = JSON.parse(localStorage.getItem("students")) || [];
+let editIndex = -1;
+
+function login() {
+    let user = document.getElementById("username").value;
+    let pass = document.getElementById("password").value;
+
+    if(user === "admin" && pass === "1234") {
+        document.getElementById("loginPage").classList.add("hidden");
+        document.getElementById("mainPage").classList.remove("hidden");
+        loadTable();
+    } else {
+        alert("Wrong login");
+    }
+}
+
+function logout() {
+    location.reload();
+}
+
+function saveStudent() {
+    let name = document.getElementById("name").value;
+    let quiz = document.getElementById("quiz").value;
+    let homework = document.getElementById("homework").value;
+    let attendance = document.getElementById("attendance").value;
+
+    if(name === "" || quiz === "" || homework === "" || attendance === "") {
+        alert("Fill all fields");
+        return;
+    }
+
+    let student = { name, homework, attendance, quiz };
+
+    if(editIndex === -1) {
+        students.push(student);
+    } else {
+        students[editIndex] = student;
+        editIndex = -1;
+    }
+
+    localStorage.setItem("students", JSON.stringify(students));
+    clearFields();
+    loadTable();
+}
+
+function loadTable() {
+    let table = document.getElementById("dataTable");
+    table.innerHTML = "";
+
+    students.forEach((s, index) => {
+        let row = table.insertRow();
+        row.insertCell(0).innerHTML = s.name;
+        row.insertCell(1).innerHTML = s.homework;
+        row.insertCell(2).innerHTML = s.attendance;
+        row.insertCell(3).innerHTML = s.quiz;
+        row.insertCell(4).innerHTML =
+            `<button onclick="editStudent(${index})">Edit</button>
+             <button onclick="deleteStudent(${index})">Delete</button>`;
+    });
+}
+
+function editStudent(index) {
+    let s = students[index];
+    document.getElementById("name").value = s.name;
+    document.getElementById("quiz").value = s.quiz;
+    document.getElementById("homework").value = s.homework;
+    document.getElementById("attendance").value = s.attendance;
+    editIndex = index;
+}
+
+function deleteStudent(index) {
+    students.splice(index, 1);
+    localStorage.setItem("students", JSON.stringify(students));
+    loadTable();
+}
+
+function clearFields() {
+    document.getElementById("name").value = "";
+    document.getElementById("quiz").value = "";
+    document.getElementById("homework").value = "";
+    document.getElementById("attendance").value = "";
+}
+
+function downloadExcel() {
+    let csv = "Name,Homework,Attendance,Quiz\n";
+    students.forEach(s => {
+        csv += `${s.name},${s.homework},${s.attendance},${s.quiz}\n`;
+    });
+
+    let blob = new Blob([csv], { type: "text/csv" });
+    let link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "students.csv";
+    link.click();
+}
+</script>
+
+</body>
+</html>
