@@ -4,65 +4,20 @@
     <title>Student Management System</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #4e73df, #1cc88a);
-            margin: 0;
-            padding: 0;
-        }
-
-        .card {
-            background: white;
-            width: 95%;
-            max-width: 1100px;
-            margin: 30px auto;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-        }
-
-        input, select {
-            padding: 8px;
-            margin: 5px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            width: 180px;
-        }
-
-        button {
-            padding: 8px 12px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
+        body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #4e73df, #1cc88a); margin: 0; padding: 0; }
+        .card { background: white; width: 95%; max-width: 1200px; margin: 30px auto; padding: 20px; border-radius: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+        input, select { padding: 8px; margin: 5px; border-radius: 5px; border: 1px solid #ccc; width: 180px; }
+        button { padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
         .primary { background:#4e73df; color:white; }
         .success { background:#1cc88a; color:white; }
         .danger { background:#e74a3b; color:white; }
         .whatsapp { background:#25D366; color:white; }
-
         button:hover { opacity:0.85; }
-
-        table {
-            width:100%;
-            margin-top:20px;
-            border-collapse:collapse;
-        }
-
-        th, td {
-            padding:8px;
-            border-bottom:1px solid #ddd;
-            text-align:center;
-        }
-
+        table { width:100%; margin-top:20px; border-collapse:collapse; }
+        th, td { padding:8px; border-bottom:1px solid #ddd; text-align:center; }
         th { background:#f2f2f2; }
-
         .hidden { display:none; }
-
-        @media(max-width:768px){
-            input, select { width:100%; display:block; }
-        }
+        @media(max-width:768px){ input, select { width:100%; display:block; } }
     </style>
 </head>
 <body>
@@ -80,6 +35,7 @@
 <div id="mainPage" class="card hidden">
     <h2>Student Attendance & Quiz System</h2>
 
+    <input type="text" id="code" placeholder="Code">
     <input type="text" id="name" placeholder="Student Name">
 
     <select id="section">
@@ -112,9 +68,20 @@
     <button class="success" onclick="downloadExcel()">Download Excel</button>
     <button class="danger" onclick="logout()">Logout</button>
 
+    <br><br>
+    <label for="filterSection">Filter by Section:</label>
+    <select id="filterSection" onchange="loadTable()">
+        <option value="All">All Students</option>
+        <option>3rd Prep</option>
+        <option>Sec 1</option>
+        <option>Sec 2</option>
+        <option>Sec 3</option>
+    </select>
+
     <table>
         <thead>
             <tr>
+                <th>Code</th>
                 <th>Name</th>
                 <th>Section</th>
                 <th>Student Phone</th>
@@ -139,50 +106,37 @@ const adminPass = "654321";
 function login() {
     let user = document.getElementById("username").value;
     let pass = document.getElementById("password").value;
-
     if(user === adminUser && pass === adminPass){
         document.getElementById("loginPage").classList.add("hidden");
         document.getElementById("mainPage").classList.remove("hidden");
         loadTable();
-    } else {
-        alert("Wrong login");
-    }
+    } else { alert("Wrong login"); }
 }
 
-function logout() {
-    location.reload();
-}
+function logout() { location.reload(); }
 
 function saveStudent() {
+    let code = document.getElementById("code").value.trim();
     let name = document.getElementById("name").value.trim();
     let section = document.getElementById("section").value;
     let studentPhone = document.getElementById("studentPhone").value.trim();
     let parentPhone = document.getElementById("parentPhone").value.trim();
 
-    // Auto-add '02' for parent phone if missing
-    if(!parentPhone.startsWith("02")) {
-        parentPhone = "02" + parentPhone;
-    }
+    if(!parentPhone.startsWith("02")) parentPhone = "02" + parentPhone;
 
     let homework = document.getElementById("homework").value;
     let attendance = document.getElementById("attendance").value;
     let quiz = document.getElementById("quiz").value;
 
-    if(name === "" || section === "" || studentPhone === "" ||
-       parentPhone === "" || homework === "" ||
-       attendance === "" || quiz === "") {
+    if(code==="" || name==="" || section==="" || studentPhone==="" || parentPhone==="" || homework==="" || attendance==="" || quiz===""){
         alert("Fill all fields");
         return;
     }
 
-    let student = { name, section, studentPhone, parentPhone, homework, attendance, quiz };
+    let student = { code, name, section, studentPhone, parentPhone, homework, attendance, quiz };
 
-    if(editIndex === -1){
-        students.push(student);
-    } else {
-        students[editIndex] = student;
-        editIndex = -1;
-    }
+    if(editIndex === -1){ students.push(student); }
+    else { students[editIndex] = student; editIndex=-1; }
 
     localStorage.setItem("students", JSON.stringify(students));
     clearFields();
@@ -192,10 +146,14 @@ function saveStudent() {
 function loadTable() {
     let table = document.getElementById("dataTable");
     table.innerHTML = "";
+    let filter = document.getElementById("filterSection").value;
 
-    students.forEach((s, i)=>{
+    students.forEach((s,i)=>{
+        if(filter !== "All" && s.section !== filter) return;
+
         let row = table.insertRow();
         row.innerHTML = `
+            <td>${s.code}</td>
             <td>${s.name}</td>
             <td>${s.section}</td>
             <td>${s.studentPhone}</td>
@@ -204,10 +162,7 @@ function loadTable() {
             <td>${s.attendance}</td>
             <td>${s.quiz}</td>
             <td>
-                <button class="whatsapp" 
-                    onclick="sendWhatsApp('${s.parentPhone}', '${s.name}', '${s.attendance}', '${s.homework}', '${s.quiz}')">
-                    WhatsApp
-                </button>
+                <button class="whatsapp" onclick="sendWhatsApp('${s.parentPhone}','${s.code}','${s.name}','${s.attendance}','${s.homework}','${s.quiz}')">WhatsApp</button>
                 <button class="primary" onclick="editStudent(${i})">Edit</button>
                 <button class="danger" onclick="deleteStudent(${i})">Delete</button>
             </td>
@@ -215,40 +170,25 @@ function loadTable() {
     });
 }
 
-function sendWhatsApp(phone, studentName, attendance, homework, quiz) {
-    if (!phone) {
-        alert("رقم الهاتف فارغ!");
-        return;
-    }
+function sendWhatsApp(phone, studentCode, studentName, attendance, homework, quiz){
+    if(!phone){ alert("رقم الهاتف فارغ!"); return; }
 
-    // Remove all non-digit characters
     let cleanPhone = phone.replace(/\D/g,'');
+    if(cleanPhone.length === 10 && cleanPhone.startsWith("0")) cleanPhone = "20"+cleanPhone.substring(1);
+    else if(cleanPhone.length === 9) cleanPhone = "20"+cleanPhone;
+    if(cleanPhone.length<11){ alert("رقم الهاتف غير صحيح."); return; }
 
-    // Fix Egyptian numbers for WhatsApp
-    if (cleanPhone.length === 10 && cleanPhone.startsWith("0")) {
-        cleanPhone = "20" + cleanPhone.substring(1);
-    } else if (cleanPhone.length === 9) {
-        cleanPhone = "20" + cleanPhone;
-    }
+    let attendanceArabic = attendance==="Present"?"حاضر":"غائب";
+    let homeworkArabic = homework==="Done"?"تم":"لم يتم";
 
-    if (cleanPhone.length < 11) {
-        alert("رقم الهاتف غير صحيح. يرجى إدخال رقم مصري كامل (مثال: 01012345678).");
-        return;
-    }
-
-    // Convert status to Arabic
-    let attendanceArabic = attendance === "Present" ? "حاضر" : "غائب";
-    let homeworkArabic = homework === "Done" ? "تم" : "لم يتم";
-
-    // Arabic message
-    let message = `اسم الطالب: ${studentName}\nالحضور: ${attendanceArabic}\nالواجب: ${homeworkArabic}\nالدرجة: ${quiz}`;
-
-    let url = "https://wa.me/" + cleanPhone + "?text=" + encodeURIComponent(message);
-    window.open(url, "_blank");
+    let message = `كود الطالب: ${studentCode}\nاسم الطالب: ${studentName}\nالحضور: ${attendanceArabic}\nالواجب: ${homeworkArabic}\nالدرجة: ${quiz}`;
+    let url = "https://wa.me/"+cleanPhone+"?text="+encodeURIComponent(message);
+    window.open(url,"_blank");
 }
 
-function editStudent(i) {
+function editStudent(i){
     let s = students[i];
+    document.getElementById("code").value = s.code;
     document.getElementById("name").value = s.name;
     document.getElementById("section").value = s.section;
     document.getElementById("studentPhone").value = s.studentPhone;
@@ -259,13 +199,14 @@ function editStudent(i) {
     editIndex = i;
 }
 
-function deleteStudent(i) {
+function deleteStudent(i){
     students.splice(i,1);
     localStorage.setItem("students", JSON.stringify(students));
     loadTable();
 }
 
-function clearFields() {
+function clearFields(){
+    document.getElementById("code").value="";
     document.getElementById("name").value="";
     document.getElementById("section").value="";
     document.getElementById("studentPhone").value="";
@@ -275,19 +216,15 @@ function clearFields() {
     document.getElementById("quiz").value="";
 }
 
-function downloadExcel() {
-    let csv = "Name,Section,Student Phone,Parent Phone,Homework,Attendance,Quiz\n";
-
-    students.forEach(function(s){
-        csv += s.name + "," + s.section + "," + s.studentPhone + "," +
-               s.parentPhone + "," + s.homework + "," +
-               s.attendance + "," + s.quiz + "\n";
+function downloadExcel(){
+    let csv="Code,Name,Section,Student Phone,Parent Phone,Homework,Attendance,Quiz\n";
+    students.forEach(s=>{
+        csv+= `${s.code},${s.name},${s.section},${s.studentPhone},${s.parentPhone},${s.homework},${s.attendance},${s.quiz}\n`;
     });
-
-    let blob = new Blob([csv], { type:"text/csv" });
+    let blob = new Blob([csv], {type:"text/csv"});
     let link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = "students.csv";
+    link.download="students.csv";
     link.click();
 }
 </script>
