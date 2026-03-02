@@ -217,7 +217,7 @@ function loadTable() {
 
 function sendWhatsApp(phone, studentName, attendance, homework, quiz) {
     if (!phone) {
-        alert("Phone number is empty!");
+        alert("رقم الهاتف فارغ!");
         return;
     }
 
@@ -232,12 +232,16 @@ function sendWhatsApp(phone, studentName, attendance, homework, quiz) {
     }
 
     if (cleanPhone.length < 11) {
-        alert("Invalid phone number. Include full Egyptian number (e.g., 01012345678).");
+        alert("رقم الهاتف غير صحيح. يرجى إدخال رقم مصري كامل (مثال: 01012345678).");
         return;
     }
 
-    // Message including student info
-    let message = `Student Name: ${studentName}\nAttendance: ${attendance}\nHomework: ${homework}\nQuiz: ${quiz}`;
+    // Convert status to Arabic
+    let attendanceArabic = attendance === "Present" ? "حاضر" : "غائب";
+    let homeworkArabic = homework === "Done" ? "تم" : "لم يتم";
+
+    // Arabic message
+    let message = `اسم الطالب: ${studentName}\nالحضور: ${attendanceArabic}\nالواجب: ${homeworkArabic}\nالدرجة: ${quiz}`;
 
     let url = "https://wa.me/" + cleanPhone + "?text=" + encodeURIComponent(message);
     window.open(url, "_blank");
