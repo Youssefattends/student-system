@@ -204,7 +204,10 @@ function loadTable() {
             <td>${s.attendance}</td>
             <td>${s.quiz}</td>
             <td>
-                <button class="whatsapp" onclick="sendWhatsApp('${s.parentPhone}', '${s.name}')">WhatsApp</button>
+                <button class="whatsapp" 
+                    onclick="sendWhatsApp('${s.parentPhone}', '${s.name}', '${s.attendance}', '${s.homework}', '${s.quiz}')">
+                    WhatsApp
+                </button>
                 <button class="primary" onclick="editStudent(${i})">Edit</button>
                 <button class="danger" onclick="deleteStudent(${i})">Delete</button>
             </td>
@@ -212,7 +215,7 @@ function loadTable() {
     });
 }
 
-function sendWhatsApp(phone, studentName) {
+function sendWhatsApp(phone, studentName, attendance, homework, quiz) {
     if (!phone) {
         alert("Phone number is empty!");
         return;
@@ -233,9 +236,10 @@ function sendWhatsApp(phone, studentName) {
         return;
     }
 
-    let message = `Hello, this is a message regarding ${studentName}.`;
-    let url = "https://wa.me/" + cleanPhone + "?text=" + encodeURIComponent(message);
+    // Message including student info
+    let message = `Student Name: ${studentName}\nAttendance: ${attendance}\nHomework: ${homework}\nQuiz: ${quiz}`;
 
+    let url = "https://wa.me/" + cleanPhone + "?text=" + encodeURIComponent(message);
     window.open(url, "_blank");
 }
 
