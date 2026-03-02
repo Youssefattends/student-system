@@ -27,6 +27,7 @@
     <h2>Student Attendance & Quiz System</h2>
 
     <input type="text" id="name" placeholder="Student Name">
+
     <select id="section">
         <option value="">Select Section</option>
         <option>3rd Prep</option>
@@ -34,19 +35,24 @@
         <option>Sec 2</option>
         <option>Sec 3</option>
     </select>
-    <input type="text" id="studentPhone" placeholder="Student Phone Number">
-    <input type="text" id="parentPhone" placeholder="Parent Phone Number">
+
+    <input type="tel" id="studentPhone" placeholder="Student Phone Number">
+    <input type="tel" id="parentPhone" placeholder="Parent Phone Number">
+
     <select id="homework">
         <option value="">Homework</option>
         <option>Done</option>
         <option>Not Done</option>
     </select>
+
     <select id="attendance">
         <option value="">Attendance</option>
         <option>Present</option>
         <option>Absent</option>
     </select>
+
     <input type="number" id="quiz" placeholder="Quiz Degree">
+
     <br>
     <button onclick="saveStudent()">Save Student</button>
     <button onclick="downloadExcel()">Download Excel</button>
@@ -84,7 +90,9 @@ function login() {
         document.getElementById("loginPage").classList.add("hidden");
         document.getElementById("mainPage").classList.remove("hidden");
         loadTable();
-    } else { alert("Wrong login"); }
+    } else { 
+        alert("Wrong login"); 
+    }
 }
 
 function logout() {
@@ -100,13 +108,19 @@ function saveStudent() {
     let attendance = document.getElementById("attendance").value;
     let quiz = document.getElementById("quiz").value;
 
-   if(!name || !section || !studentPhone || !parentPhone || !homework || !attendance || !quiz){
-        alert("Fill all fields"); return;
+    if(!name || !section || !studentPhone || !parentPhone || !homework || !attendance || !quiz){
+        alert("Fill all fields"); 
+        return;
     }
 
     let student = { name, section, studentPhone, parentPhone, homework, attendance, quiz };
-    if(editIndex === -1) students.push(student);
-    else { students[editIndex] = student; editIndex = -1; }
+
+    if(editIndex === -1) {
+        students.push(student);
+    } else {
+        students[editIndex] = student;
+        editIndex = -1;
+    }
 
     localStorage.setItem("students", JSON.stringify(students));
     clearFields();
@@ -116,6 +130,7 @@ function saveStudent() {
 function loadTable() {
     let table = document.getElementById("dataTable");
     table.innerHTML = "";
+
     students.forEach((s, i)=>{
         let row = table.insertRow();
         row.insertCell(0).innerHTML = s.name;
@@ -125,8 +140,10 @@ function loadTable() {
         row.insertCell(4).innerHTML = s.homework;
         row.insertCell(5).innerHTML = s.attendance;
         row.insertCell(6).innerHTML = s.quiz;
-        row.insertCell(7).innerHTML = `<button onclick="editStudent(${i})">Edit</button>
-                                       <button onclick="deleteStudent(${i})">Delete</button>`;
+        row.insertCell(7).innerHTML = `
+            <button onclick="editStudent(${i})">Edit</button>
+            <button onclick="deleteStudent(${i})">Delete</button>
+        `;
     });
 }
 
@@ -159,16 +176,19 @@ function clearFields() {
 }
 
 function downloadExcel() {
-    let csv = "Name,Section,Student Phone,Parent Phone,Homework,Attendance,Quiz\\n";
+    let csv = "Name,Section,Student Phone,Parent Phone,Homework,Attendance,Quiz\n";
+    
     students.forEach(s => {
-        csv += ${s.name},${s.section},${s.studentPhone},${s.parentPhone},${s.homework},${s.attendance},${s.quiz}\\n;
+        csv += `${s.name},${s.section},${s.studentPhone},${s.parentPhone},${s.homework},${s.attendance},${s.quiz}\n`;
     });
-    let blob = new Blob([csv], {type:"text/csv"});
+
+    let blob = new Blob([csv], { type:"text/csv" });
     let link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = "students.csv";
     link.click();
 }
 </script>
+
 </body>
 </html>
