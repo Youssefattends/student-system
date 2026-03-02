@@ -2,28 +2,93 @@
 <html>
 <head>
     <title>Student Management System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <style>
-        body { font-family: Arial; text-align: center; background:#f2f2f2; }
-        input, button, select { padding:8px; margin:5px; }
-        table { margin:auto; margin-top:20px; border-collapse:collapse; width:95%; background:white; }
-        th, td { border:1px solid black; padding:8px; }
-        th { background:#ddd; }
-        .hidden { display:none; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #4e73df, #1cc88a);
+            margin: 0;
+            padding: 0;
+        }
+
+        .card {
+            background: white;
+            width: 95%;
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        input, select {
+            padding: 10px;
+            margin: 5px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            width: 180px;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .primary { background: #4e73df; color: white; }
+        .success { background: #1cc88a; color: white; }
+        .danger { background: #e74a3b; color: white; }
+        .whatsapp { background: #25D366; color: white; }
+
+        button:hover { opacity: 0.85; }
+
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: center;
+        }
+
+        th {
+            background: #f8f9fc;
+        }
+
+        .hidden { display: none; }
+
+        @media(max-width: 768px){
+            input, select {
+                width: 100%;
+                display: block;
+            }
+        }
     </style>
 </head>
 <body>
 
-<!-- Login Page -->
-<div id="loginPage">
+<!-- Login -->
+<div id="loginPage" class="card">
     <h2>Admin Login</h2>
     <input type="text" id="username" placeholder="Username">
     <input type="password" id="password" placeholder="Password">
-    <br>
-    <button onclick="login()">Login</button>
+    <br><br>
+    <button class="primary" onclick="login()">Login</button>
 </div>
 
-<!-- Main Page -->
-<div id="mainPage" class="hidden">
+<!-- Main -->
+<div id="mainPage" class="card hidden">
     <h2>Student Attendance & Quiz System</h2>
 
     <input type="text" id="name" placeholder="Student Name">
@@ -36,8 +101,8 @@
         <option>Sec 3</option>
     </select>
 
-    <input type="tel" id="studentPhone" placeholder="Student Phone Number">
-    <input type="tel" id="parentPhone" placeholder="Parent Phone Number">
+    <input type="tel" id="studentPhone" placeholder="Student Phone">
+    <input type="tel" id="parentPhone" placeholder="Parent Phone">
 
     <select id="homework">
         <option value="">Homework</option>
@@ -53,10 +118,10 @@
 
     <input type="number" id="quiz" placeholder="Quiz Degree">
 
-    <br>
-    <button onclick="saveStudent()">Save Student</button>
-    <button onclick="downloadExcel()">Download Excel</button>
-    <button onclick="logout()">Logout</button>
+    <br><br>
+    <button class="primary" onclick="saveStudent()">Save</button>
+    <button class="success" onclick="downloadExcel()">Download Excel</button>
+    <button class="danger" onclick="logout()">Logout</button>
 
     <table>
         <thead>
@@ -79,20 +144,17 @@
 let students = JSON.parse(localStorage.getItem("students")) || [];
 let editIndex = -1;
 
-// Admin login credentials
 const adminUser = "admin";
 const adminPass = "654321";
 
 function login() {
-    let u = document.getElementById("username").value;
-    let p = document.getElementById("password").value;
+    let u = username.value;
+    let p = password.value;
     if(u === adminUser && p === adminPass){
-        document.getElementById("loginPage").classList.add("hidden");
-        document.getElementById("mainPage").classList.remove("hidden");
+        loginPage.classList.add("hidden");
+        mainPage.classList.remove("hidden");
         loadTable();
-    } else { 
-        alert("Wrong login"); 
-    }
+    } else { alert("Wrong login"); }
 }
 
 function logout() {
@@ -100,27 +162,23 @@ function logout() {
 }
 
 function saveStudent() {
-    let name = document.getElementById("name").value;
-    let section = document.getElementById("section").value;
-    let studentPhone = document.getElementById("studentPhone").value;
-    let parentPhone = document.getElementById("parentPhone").value;
-    let homework = document.getElementById("homework").value;
-    let attendance = document.getElementById("attendance").value;
-    let quiz = document.getElementById("quiz").value;
+    let student = {
+        name: name.value,
+        section: section.value,
+        studentPhone: studentPhone.value,
+        parentPhone: parentPhone.value,
+        homework: homework.value,
+        attendance: attendance.value,
+        quiz: quiz.value
+    };
 
-    if(!name || !section || !studentPhone || !parentPhone || !homework || !attendance || !quiz){
-        alert("Fill all fields"); 
+    if(Object.values(student).some(v => !v)){
+        alert("Fill all fields");
         return;
     }
 
-    let student = { name, section, studentPhone, parentPhone, homework, attendance, quiz };
-
-    if(editIndex === -1) {
-        students.push(student);
-    } else {
-        students[editIndex] = student;
-        editIndex = -1;
-    }
+    if(editIndex === -1) students.push(student);
+    else { students[editIndex] = student; editIndex = -1; }
 
     localStorage.setItem("students", JSON.stringify(students));
     clearFields();
@@ -128,34 +186,41 @@ function saveStudent() {
 }
 
 function loadTable() {
-    let table = document.getElementById("dataTable");
-    table.innerHTML = "";
-
+    dataTable.innerHTML = "";
     students.forEach((s, i)=>{
-        let row = table.insertRow();
-        row.insertCell(0).innerHTML = s.name;
-        row.insertCell(1).innerHTML = s.section;
-        row.insertCell(2).innerHTML = s.studentPhone;
-        row.insertCell(3).innerHTML = s.parentPhone;
-        row.insertCell(4).innerHTML = s.homework;
-        row.insertCell(5).innerHTML = s.attendance;
-        row.insertCell(6).innerHTML = s.quiz;
-        row.insertCell(7).innerHTML = `
-            <button onclick="editStudent(${i})">Edit</button>
-            <button onclick="deleteStudent(${i})">Delete</button>
+        let row = dataTable.insertRow();
+        row.innerHTML = `
+            <td>${s.name}</td>
+            <td>${s.section}</td>
+            <td>${s.studentPhone}</td>
+            <td>${s.parentPhone}</td>
+            <td>${s.homework}</td>
+            <td>${s.attendance}</td>
+            <td>${s.quiz}</td>
+            <td>
+                <button class="whatsapp" onclick="sendWhatsApp('${s.parentPhone}')">WhatsApp</button>
+                <button class="primary" onclick="editStudent(${i})">Edit</button>
+                <button class="danger" onclick="deleteStudent(${i})">Delete</button>
+            </td>
         `;
     });
 }
 
+function sendWhatsApp(phone) {
+    let cleanPhone = phone.replace(/\D/g, '');
+    let url = `https://wa.me/${cleanPhone}?text=Hi`;
+    window.open(url, "_blank");
+}
+
 function editStudent(i) {
     let s = students[i];
-    document.getElementById("name").value = s.name;
-    document.getElementById("section").value = s.section;
-    document.getElementById("studentPhone").value = s.studentPhone;
-    document.getElementById("parentPhone").value = s.parentPhone;
-    document.getElementById("homework").value = s.homework;
-    document.getElementById("attendance").value = s.attendance;
-    document.getElementById("quiz").value = s.quiz;
+    name.value = s.name;
+    section.value = s.section;
+    studentPhone.value = s.studentPhone;
+    parentPhone.value = s.parentPhone;
+    homework.value = s.homework;
+    attendance.value = s.attendance;
+    quiz.value = s.quiz;
     editIndex = i;
 }
 
@@ -166,19 +231,18 @@ function deleteStudent(i) {
 }
 
 function clearFields() {
-    document.getElementById("name").value="";
-    document.getElementById("section").value="";
-    document.getElementById("studentPhone").value="";
-    document.getElementById("parentPhone").value="";
-    document.getElementById("homework").value="";
-    document.getElementById("attendance").value="";
-    document.getElementById("quiz").value="";
+    name.value="";
+    section.value="";
+    studentPhone.value="";
+    parentPhone.value="";
+    homework.value="";
+    attendance.value="";
+    quiz.value="";
 }
 
 function downloadExcel() {
     let csv = "Name,Section,Student Phone,Parent Phone,Homework,Attendance,Quiz\n";
-    
-    students.forEach(s => {
+    students.forEach(s=>{
         csv += `${s.name},${s.section},${s.studentPhone},${s.parentPhone},${s.homework},${s.attendance},${s.quiz}\n`;
     });
 
