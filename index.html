@@ -22,10 +22,7 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
 
-        h2 {
-            margin-top: 0;
-            color: #333;
-        }
+        h2 { margin-top: 0; }
 
         input, select {
             padding: 10px;
@@ -62,13 +59,11 @@
             text-align: center;
         }
 
-        th {
-            background: #f8f9fc;
-        }
+        th { background: #f8f9fc; }
 
         .hidden { display: none; }
 
-        @media(max-width: 768px){
+        @media(max-width:768px){
             input, select {
                 width: 100%;
                 display: block;
@@ -148,13 +143,13 @@ const adminUser = "admin";
 const adminPass = "654321";
 
 function login() {
-    let u = username.value;
-    let p = password.value;
-    if(u === adminUser && p === adminPass){
+    if(username.value === adminUser && password.value === adminPass){
         loginPage.classList.add("hidden");
         mainPage.classList.remove("hidden");
         loadTable();
-    } else { alert("Wrong login"); }
+    } else {
+        alert("Wrong login");
+    }
 }
 
 function logout() {
@@ -162,23 +157,36 @@ function logout() {
 }
 
 function saveStudent() {
+
     let student = {
-        name: name.value,
+        name: name.value.trim(),
         section: section.value,
-        studentPhone: studentPhone.value,
-        parentPhone: parentPhone.value,
+        studentPhone: studentPhone.value.trim(),
+        parentPhone: parentPhone.value.trim(),
         homework: homework.value,
         attendance: attendance.value,
         quiz: quiz.value
     };
 
-    if(Object.values(student).some(v => !v)){
+    if (
+        student.name === "" ||
+        student.section === "" ||
+        student.studentPhone === "" ||
+        student.parentPhone === "" ||
+        student.homework === "" ||
+        student.attendance === "" ||
+        student.quiz === ""
+    ) {
         alert("Fill all fields");
         return;
     }
 
-    if(editIndex === -1) students.push(student);
-    else { students[editIndex] = student; editIndex = -1; }
+    if(editIndex === -1){
+        students.push(student);
+    } else {
+        students[editIndex] = student;
+        editIndex = -1;
+    }
 
     localStorage.setItem("students", JSON.stringify(students));
     clearFields();
@@ -187,6 +195,7 @@ function saveStudent() {
 
 function loadTable() {
     dataTable.innerHTML = "";
+
     students.forEach((s, i)=>{
         let row = dataTable.insertRow();
         row.innerHTML = `
@@ -207,7 +216,7 @@ function loadTable() {
 }
 
 function sendWhatsApp(phone) {
-    let cleanPhone = phone.replace(/\D/g, '');
+    let cleanPhone = phone.replace(/\D/g,'');
     let url = `https://wa.me/${cleanPhone}?text=Hi`;
     window.open(url, "_blank");
 }
