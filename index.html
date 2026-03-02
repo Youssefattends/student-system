@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -28,7 +27,15 @@
     <h2>Student Attendance & Quiz System</h2>
 
     <input type="text" id="name" placeholder="Student Name">
-    <input type="number" id="quiz" placeholder="Quiz Degree">
+    <select id="section">
+        <option value="">Select Section</option>
+        <option>3rd Prep</option>
+        <option>Sec 1</option>
+        <option>Sec 2</option>
+        <option>Sec 3</option>
+    </select>
+    <input type="text" id="studentPhone" placeholder="Student Phone Number">
+    <input type="text" id="parentPhone" placeholder="Parent Phone Number">
     <select id="homework">
         <option value="">Homework</option>
         <option>Done</option>
@@ -39,6 +46,7 @@
         <option>Present</option>
         <option>Absent</option>
     </select>
+    <input type="number" id="quiz" placeholder="Quiz Degree">
     <br>
     <button onclick="saveStudent()">Save Student</button>
     <button onclick="downloadExcel()">Download Excel</button>
@@ -48,6 +56,9 @@
         <thead>
             <tr>
                 <th>Name</th>
+                <th>Section</th>
+                <th>Student Phone</th>
+                <th>Parent Phone</th>
                 <th>Homework</th>
                 <th>Attendance</th>
                 <th>Quiz</th>
@@ -62,21 +73,18 @@
 let students = JSON.parse(localStorage.getItem("students")) || [];
 let editIndex = -1;
 
-// Hard-coded admin credentials (change as needed)
-let adminUser = "admin";
-let adminPass = "1234";
+// Admin login credentials
+const adminUser = "admin";
+const adminPass = "654321";
 
 function login() {
     let u = document.getElementById("username").value;
     let p = document.getElementById("password").value;
-
-    if(u === adminUser && p === adminPass) {
+    if(u === adminUser && p === adminPass){
         document.getElementById("loginPage").classList.add("hidden");
         document.getElementById("mainPage").classList.remove("hidden");
         loadTable();
-    } else {
-        alert("Wrong login");
-    }
+    } else { alert("Wrong login"); }
 }
 
 function logout() {
@@ -85,16 +93,18 @@ function logout() {
 
 function saveStudent() {
     let name = document.getElementById("name").value;
-    let quiz = document.getElementById("quiz").value;
+    let section = document.getElementById("section").value;
+    let studentPhone = document.getElementById("studentPhone").value;
+    let parentPhone = document.getElementById("parentPhone").value;
     let homework = document.getElementById("homework").value;
     let attendance = document.getElementById("attendance").value;
+    let quiz = document.getElementById("quiz").value;
 
-    if(name === "" || quiz === "" || homework === "" || attendance === "") {
-        alert("Fill all fields");
-        return;
+   if(!name || !section || !studentPhone || !parentPhone || !homework || !attendance || !quiz){
+        alert("Fill all fields"); return;
     }
 
-    let student = { name, homework, attendance, quiz };
+    let student = { name, section, studentPhone, parentPhone, homework, attendance, quiz };
     if(editIndex === -1) students.push(student);
     else { students[editIndex] = student; editIndex = -1; }
 
@@ -106,25 +116,29 @@ function saveStudent() {
 function loadTable() {
     let table = document.getElementById("dataTable");
     table.innerHTML = "";
-
-    students.forEach((s, i) => {
+    students.forEach((s, i)=>{
         let row = table.insertRow();
         row.insertCell(0).innerHTML = s.name;
-        row.insertCell(1).innerHTML = s.homework;
-        row.insertCell(2).innerHTML = s.attendance;
-        row.insertCell(3).innerHTML = s.quiz;
-        row.insertCell(4).innerHTML =
-            `<button onclick="editStudent(${i})">Edit</button>
-             <button onclick="deleteStudent(${i})">Delete</button>`;
+        row.insertCell(1).innerHTML = s.section;
+        row.insertCell(2).innerHTML = s.studentPhone;
+        row.insertCell(3).innerHTML = s.parentPhone;
+        row.insertCell(4).innerHTML = s.homework;
+        row.insertCell(5).innerHTML = s.attendance;
+        row.insertCell(6).innerHTML = s.quiz;
+        row.insertCell(7).innerHTML = `<button onclick="editStudent(${i})">Edit</button>
+                                       <button onclick="deleteStudent(${i})">Delete</button>`;
     });
 }
 
 function editStudent(i) {
     let s = students[i];
     document.getElementById("name").value = s.name;
-    document.getElementById("quiz").value = s.quiz;
+    document.getElementById("section").value = s.section;
+    document.getElementById("studentPhone").value = s.studentPhone;
+    document.getElementById("parentPhone").value = s.parentPhone;
     document.getElementById("homework").value = s.homework;
     document.getElementById("attendance").value = s.attendance;
+    document.getElementById("quiz").value = s.quiz;
     editIndex = i;
 }
 
@@ -136,14 +150,19 @@ function deleteStudent(i) {
 
 function clearFields() {
     document.getElementById("name").value="";
-    document.getElementById("quiz").value="";
+    document.getElementById("section").value="";
+    document.getElementById("studentPhone").value="";
+    document.getElementById("parentPhone").value="";
     document.getElementById("homework").value="";
     document.getElementById("attendance").value="";
+    document.getElementById("quiz").value="";
 }
 
 function downloadExcel() {
-    let csv = "Name,Homework,Attendance,Quiz\n";
-    students.forEach(s => { csv += `${s.name},${s.homework},${s.attendance},${s.quiz}\n`; });
+    let csv = "Name,Section,Student Phone,Parent Phone,Homework,Attendance,Quiz\\n";
+    students.forEach(s => {
+        csv += ${s.name},${s.section},${s.studentPhone},${s.parentPhone},${s.homework},${s.attendance},${s.quiz}\\n;
+    });
     let blob = new Blob([csv], {type:"text/csv"});
     let link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
