@@ -97,32 +97,42 @@
 </div>
 
 <script>
-let students = JSON.parse(localStorage.getItem("students")) || [];
+// Multiple admins
+const admins = [
+    { user: "sayed", pass: "sayed" },
+    { user: "omar", pass: "omar" }
+];
+
+// Master storage key
+const MASTER_KEY = "students_master_storage";
+
+// Load students from master storage
+let students = JSON.parse(localStorage.getItem(MASTER_KEY)) || [];
 let editIndex = -1;
 
-const adminUser = "admin";
-const adminPass = "654321";
-
+// Login function
 function login() {
-    let user = document.getElementById("username").value;
-    let pass = document.getElementById("password").value;
-    if(user === adminUser && pass === adminPass){
+    let username = document.getElementById("username").value.trim();
+    let password = document.getElementById("password").value.trim();
+    let found = admins.find(a => a.user === username && a.pass === password);
+    if(found){
         document.getElementById("loginPage").classList.add("hidden");
         document.getElementById("mainPage").classList.remove("hidden");
         loadTable();
-    } else { alert("Wrong login"); }
+    } else { alert("Wrong login credentials"); }
 }
 
-function logout() { location.reload(); }
+// Logout
+function logout(){ location.reload(); }
 
-function saveStudent() {
+// Save student
+function saveStudent(){
     let code = document.getElementById("code").value.trim();
     let name = document.getElementById("name").value.trim();
     let section = document.getElementById("section").value;
     let studentPhone = document.getElementById("studentPhone").value.trim();
     let parentPhone = document.getElementById("parentPhone").value.trim();
-
-    if(!parentPhone.startsWith("02")) parentPhone = "02" + parentPhone;
+    if(!parentPhone.startsWith("02")) parentPhone = "02"+parentPhone;
 
     let homework = document.getElementById("homework").value;
     let attendance = document.getElementById("attendance").value;
@@ -135,21 +145,23 @@ function saveStudent() {
 
     let student = { code, name, section, studentPhone, parentPhone, homework, attendance, quiz };
 
-    if(editIndex === -1){ students.push(student); }
-    else { students[editIndex] = student; editIndex=-1; }
+    if(editIndex===-1) students.push(student);
+    else { students[editIndex]=student; editIndex=-1; }
 
-    localStorage.setItem("students", JSON.stringify(students));
+    // Save to master storage
+    localStorage.setItem(MASTER_KEY, JSON.stringify(students));
     clearFields();
     loadTable();
 }
 
-function loadTable() {
+// Load table
+function loadTable(){
     let table = document.getElementById("dataTable");
     table.innerHTML = "";
     let filter = document.getElementById("filterSection").value;
 
     students.forEach((s,i)=>{
-        if(filter !== "All" && s.section !== filter) return;
+        if(filter!=="All" && s.section!==filter) return;
 
         let row = table.insertRow();
         row.innerHTML = `
@@ -170,12 +182,12 @@ function loadTable() {
     });
 }
 
+// WhatsApp message
 function sendWhatsApp(phone, studentCode, studentName, attendance, homework, quiz){
     if(!phone){ alert("رقم الهاتف فارغ!"); return; }
-
     let cleanPhone = phone.replace(/\D/g,'');
-    if(cleanPhone.length === 10 && cleanPhone.startsWith("0")) cleanPhone = "20"+cleanPhone.substring(1);
-    else if(cleanPhone.length === 9) cleanPhone = "20"+cleanPhone;
+    if(cleanPhone.length===10 && cleanPhone.startsWith("0")) cleanPhone="20"+cleanPhone.substring(1);
+    else if(cleanPhone.length===9) cleanPhone="20"+cleanPhone;
     if(cleanPhone.length<11){ alert("رقم الهاتف غير صحيح."); return; }
 
     let attendanceArabic = attendance==="Present"?"حاضر":"غائب";
@@ -186,25 +198,28 @@ function sendWhatsApp(phone, studentCode, studentName, attendance, homework, qui
     window.open(url,"_blank");
 }
 
+// Edit student
 function editStudent(i){
-    let s = students[i];
-    document.getElementById("code").value = s.code;
-    document.getElementById("name").value = s.name;
-    document.getElementById("section").value = s.section;
-    document.getElementById("studentPhone").value = s.studentPhone;
-    document.getElementById("parentPhone").value = s.parentPhone;
-    document.getElementById("homework").value = s.homework;
-    document.getElementById("attendance").value = s.attendance;
-    document.getElementById("quiz").value = s.quiz;
-    editIndex = i;
+    let s=students[i];
+    document.getElementById("code").value=s.code;
+    document.getElementById("name").value=s.name;
+    document.getElementById("section").value=s.section;
+    document.getElementById("studentPhone").value=s.studentPhone;
+    document.getElementById("parentPhone").value=s.parentPhone;
+    document.getElementById("homework").value=s.homework;
+    document.getElementById("attendance").value=s.attendance;
+    document.getElementById("quiz").value=s.quiz;
+    editIndex=i;
 }
 
+// Delete student
 function deleteStudent(i){
     students.splice(i,1);
-    localStorage.setItem("students", JSON.stringify(students));
+    localStorage.setItem(MASTER_KEY, JSON.stringify(students));
     loadTable();
 }
 
+// Clear form
 function clearFields(){
     document.getElementById("code").value="";
     document.getElementById("name").value="";
@@ -216,14 +231,19 @@ function clearFields(){
     document.getElementById("quiz").value="";
 }
 
+// Excel export (filtered)
 function downloadExcel(){
+    let filter = document.getElementById("filterSection").value;
     let csv="Code,Name,Section,Student Phone,Parent Phone,Homework,Attendance,Quiz\n";
+
     students.forEach(s=>{
+        if(filter!=="All" && s.section!==filter) return;
         csv+= `${s.code},${s.name},${s.section},${s.studentPhone},${s.parentPhone},${s.homework},${s.attendance},${s.quiz}\n`;
     });
+
     let blob = new Blob([csv], {type:"text/csv"});
-    let link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
+    let link=document.createElement("a");
+    link.href=URL.createObjectURL(blob);
     link.download="students.csv";
     link.click();
 }
