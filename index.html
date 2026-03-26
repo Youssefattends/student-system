@@ -73,7 +73,7 @@ th { background:#f2f2f2; }
     <input type="number" id="quiz" placeholder="Quiz Degree">
 
     <br><br>
-    <button class="primary" onclick="saveStudent()">Save Student</button>
+    <button class="primary" id="saveButton">Save Student</button>
     <button class="success" onclick="downloadExcel()">Download Excel</button>
     <button class="danger" onclick="logout()">Logout</button>
 
@@ -113,6 +113,11 @@ const admins = [
 
 let editId = null;
 
+// Attach Save button listener AFTER DOM loads
+document.addEventListener("DOMContentLoaded", function() {
+    document.getElementById("saveButton").addEventListener("click", saveStudent);
+});
+
 // Login
 function login() {
     let username = document.getElementById("username").value.trim();
@@ -130,6 +135,7 @@ function logout(){ location.reload(); }
 
 // Save student
 async function saveStudent() {
+    console.log("Save button pressed"); // Debug
     let code = document.getElementById("code").value.trim();
     let name = document.getElementById("name").value.trim();
     let section = document.getElementById("section").value;
@@ -144,20 +150,24 @@ async function saveStudent() {
         return;
     }
 
-    if(editId){
-        const { error } = await supabase.from('students')
-            .update({ code, name, section, studentPhone, parentPhone, homework, attendance, quiz })
-            .eq('id', editId);
-        if(error){ console.error(error); alert("Update failed"); }
-        editId = null;
-    } else {
-        const { error } = await supabase.from('students')
-            .insert([{ code, name, section, studentPhone, parentPhone, homework, attendance, quiz }]);
-        if(error){ console.error(error); alert("Insert failed"); return; }
+    try {
+        if(editId){
+            const { error } = await supabase.from('students')
+                .update({ code, name, section, studentPhone, parentPhone, homework, attendance, quiz })
+                .eq('id', editId);
+            if(error){ console.error(error); alert("Update failed"); }
+            editId = null;
+        } else {
+            const { error } = await supabase.from('students')
+                .insert([{ code, name, section, studentPhone, parentPhone, homework, attendance, quiz }]);
+            if(error){ console.error(error); alert("Insert failed"); return; }
+        }
+        clearFields();
+        loadTable();
+    } catch(err){
+        console.error("Supabase error:", err);
+        alert("Something went wrong with Supabase.");
     }
-
-    clearFields();
-    loadTable();
 }
 
 // Load table
