@@ -2,263 +2,260 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Student Dashboard</title>
-
+<title>Student Management System</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body {
-    margin:0;
-    font-family: Arial;
-    background:#0f172a;
-    color:white;
-}
-
-.container {
-    display:flex;
-    min-height:100vh;
-}
-
-.left {
-    flex:1;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    background: linear-gradient(135deg,#6366f1,#06b6d4);
-}
-
-.right {
-    flex:1;
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    padding:40px;
-}
-
-input, select {
-    padding:10px;
-    margin:5px 0;
-    border-radius:8px;
-    border:none;
-    width:100%;
-}
-
-button {
-    padding:10px;
-    border:none;
-    border-radius:8px;
-    background:#6366f1;
-    color:white;
-    cursor:pointer;
-    margin-top:10px;
-}
-
-button:hover {
-    background:#4f46e5;
-}
-
+body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #4e73df, #1cc88a); margin:0; padding:0;}
+.card { background:white; width:95%; max-width:1200px; margin:20px auto; padding:20px; border-radius:10px; box-shadow:0 8px 20px rgba(0,0,0,0.2);}
+input, select { padding:8px; margin:5px; border-radius:5px; border:1px solid #ccc; width:180px; }
+button { padding:8px 12px; border:none; border-radius:5px; cursor:pointer; font-weight:bold;}
+.primary { background:#4e73df; color:white; }
+.success { background:#1cc88a; color:white; }
+.danger { background:#e74a3b; color:white; }
+.whatsapp { background:#25D366; color:white; }
+button:hover { opacity:0.85; }
+table { width:100%; margin-top:20px; border-collapse:collapse; }
+th, td { padding:8px; border-bottom:1px solid #ddd; text-align:center; }
+th { background:#f2f2f2; }
 .hidden { display:none; }
-
-.dashboard {
-    display:flex;
-}
-
-.sidebar {
-    width:200px;
-    background:#020617;
-    min-height:100vh;
-    padding:20px;
-}
-
-.sidebar button {
-    width:100%;
-    margin:10px 0;
-}
-
-.main {
-    flex:1;
-    padding:20px;
-}
-
-.card {
-    background:#1e293b;
-    padding:20px;
-    border-radius:10px;
-    margin:10px 0;
-    width:200px;
-}
-
-table {
-    width:100%;
-    margin-top:20px;
-    border-collapse:collapse;
-}
-
-td, th {
-    border:1px solid #444;
-    padding:8px;
-    text-align:center;
-}
+@media(max-width:768px){ input, select { width:100%; display:block; } }
 </style>
 </head>
 <body>
 
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = 'https://uhshlpukhgreezddochz.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVoc2hscHVraGdyZWV6ZGRvY2h6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MzI3MjYsImV4cCI6MjA5MDEwODcyNn0.JPY4_PBPsU-VdyJgL2FgomTVbFjln3rz_wUnfRdCjA';
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+</script>
+
 <!-- LOGIN -->
-<div id="loginPage" class="container">
-    <div class="left">
-        <h1>Welcome Back</h1>
-    </div>
-    <div class="right">
-        <h2>Login</h2>
-        <input id="user" placeholder="Username">
-        <input id="pass" type="password" placeholder="Password">
-        <button onclick="login()">Login</button>
-    </div>
+<div id="loginPage" class="card">
+    <h2>Admin Login</h2>
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <br><br>
+    <button class="primary" onclick="login()">Login</button>
 </div>
 
-<!-- DASHBOARD -->
-<div id="dashboard" class="hidden dashboard">
+<!-- MAIN PAGE -->
+<div id="mainPage" class="card hidden">
+    <h2>Student Attendance & Quiz System</h2>
 
-    <div class="sidebar">
-        <h3>Menu</h3>
-        <button onclick="showPage()">Students</button>
-        <button onclick="logout()">Logout</button>
-    </div>
+    <input type="text" id="code" placeholder="Code">
+    <input type="text" id="name" placeholder="Student Name">
 
-    <div class="main">
-        <h2>Dashboard</h2>
-        <div class="card">Students: <span id="count">0</span></div>
+    <select id="section">
+        <option value="">Select Section</option>
+        <option>3rd Prep</option>
+        <option>Sec 1</option>
+        <option>Sec 2</option>
+        <option>Sec 3</option>
+    </select>
 
-        <div id="studentsPage">
-            <h3>Add Student</h3>
-            <input id="name" placeholder="Name">
-            <select id="section">
-                <option>3rd Prep</option>
-                <option>Sec 1</option>
-                <option>Sec 2</option>
-                <option>Sec 3</option>
-            </select>
-            <input id="sphone" placeholder="Student Phone">
-            <input id="pphone" placeholder="Parent Phone">
-            <select id="homework">
-                <option>Done</option>
-                <option>Not Done</option>
-            </select>
-            <select id="attendance">
-                <option>Present</option>
-                <option>Absent</option>
-            </select>
-            <input id="quiz" placeholder="Quiz Degree">
-            <button onclick="addStudent()">Save</button>
-            <button onclick="download()">Download Excel</button>
+    <input type="tel" id="studentPhone" placeholder="Student Phone">
+    <input type="tel" id="parentPhone" placeholder="Parent Phone">
 
-            <table>
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Section</th>
-                        <th>Phones</th>
-                        <th>HW</th>
-                        <th>Attend</th>
-                        <th>Quiz</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="table"></tbody>
-            </table>
-        </div>
+    <select id="homework">
+        <option value="">Homework</option>
+        <option>Done</option>
+        <option>Not Done</option>
+    </select>
 
-    </div>
+    <select id="attendance">
+        <option value="">Attendance</option>
+        <option>Present</option>
+        <option>Absent</option>
+    </select>
+
+    <input type="number" id="quiz" placeholder="Quiz Degree">
+
+    <br><br>
+    <button class="primary" onclick="saveStudent()">Save Student</button>
+    <button class="success" onclick="downloadExcel()">Download Excel</button>
+    <button class="danger" onclick="logout()">Logout</button>
+
+    <br><br>
+    <label for="filterSection">Filter by Section:</label>
+    <select id="filterSection" onchange="loadTable()">
+        <option value="All">All Students</option>
+        <option>3rd Prep</option>
+        <option>Sec 1</option>
+        <option>Sec 2</option>
+        <option>Sec 3</option>
+    </select>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Section</th>
+                <th>Student Phone</th>
+                <th>Parent Phone</th>
+                <th>Homework</th>
+                <th>Attendance</th>
+                <th>Quiz</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="dataTable"></tbody>
+    </table>
 </div>
-
-<!-- Supabase JS -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
 <script>
-// Supabase connection
-const supabaseUrl = "https://uhshlpukhgreezddochz.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVoc2hscHVraGdyZWV6ZGRvY2h6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MzI3MjYsImV4cCI6MjA5MDEwODcyNn0.JPY4_PBPsU-VdyJXgL2FgomTVbFjln3rz_wUnfRdCjA";
-const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+const admins = [
+    { user: "sayed", pass: "sayed" },
+    { user: "omar", pass: "omar" }
+];
 
-// LOGIN
-function login(){
-    let u = document.getElementById("user").value;
-    let p = document.getElementById("pass").value;
-    if(u === "admin" && p === "654321"){
+let editId = null;
+
+// Login
+function login() {
+    let username = document.getElementById("username").value.trim();
+    let password = document.getElementById("password").value.trim();
+    let found = admins.find(a => a.user===username && a.pass===password);
+    if(found){
         document.getElementById("loginPage").classList.add("hidden");
-        document.getElementById("dashboard").classList.remove("hidden");
-        load();
-    } else {
-        alert("Wrong login");
+        document.getElementById("mainPage").classList.remove("hidden");
+        loadTable();
+    } else { alert("Wrong login credentials"); }
+}
+
+// Logout
+function logout(){ location.reload(); }
+
+// Save student
+async function saveStudent() {
+    let code = document.getElementById("code").value.trim();
+    let name = document.getElementById("name").value.trim();
+    let section = document.getElementById("section").value;
+    let studentPhone = document.getElementById("studentPhone").value.trim();
+    let parentPhone = document.getElementById("parentPhone").value.trim();
+    let homework = document.getElementById("homework").value;
+    let attendance = document.getElementById("attendance").value;
+    let quiz = document.getElementById("quiz").value;
+
+    if(!code || !name || !section || !studentPhone || !parentPhone || !homework || !attendance || !quiz){
+        alert("Fill all fields");
+        return;
     }
+
+    if(editId){
+        const { error } = await supabase.from('students')
+            .update({ code, name, section, studentphone: studentPhone, parentphone: parentPhone, homework, attendance, quiz })
+            .eq('id', editId);
+        if(error){ console.error(error); alert("Update failed"); }
+        editId = null;
+    } else {
+        const { error } = await supabase.from('students')
+            .insert([{ code, name, section, studentphone: studentPhone, parentphone: parentPhone, homework, attendance, quiz }]);
+        if(error){ console.error(error); alert("Insert failed"); return; }
+    }
+
+    clearFields();
+    loadTable();
 }
 
-// LOGOUT
-function logout(){
-    location.reload();
-}
+// Load table
+async function loadTable() {
+    let filter = document.getElementById("filterSection").value;
+    const { data: students, error } = await supabase.from('students').select('*');
+    if(error){ console.error(error); return; }
 
-// SHOW PAGE
-function showPage(){
-    document.getElementById("studentsPage").style.display = "block";
-}
+    let table = document.getElementById("dataTable");
+    table.innerHTML = "";
 
-// LOAD STUDENTS
-async function load(){
-    let { data } = await supabase.from("students").select("*").order('id', { ascending: true });
-    let t = document.getElementById("table");
-    t.innerHTML = "";
-    data.forEach(s=>{
-        let row = t.insertRow();
+    students.forEach(s => {
+        if(filter!=="All" && s.section!==filter) return;
+        let row = table.insertRow();
         row.innerHTML = `
-        <td>${s.name}</td>
-        <td>${s.section}</td>
-        <td>${s.sphone}<br>${s.pphone}</td>
-        <td>${s.homework}</td>
-        <td>${s.attendance}</td>
-        <td>${s.quiz}</td>
-        <td><button onclick="del(${s.id})">Delete</button></td>
+            <td>${s.code}</td>
+            <td>${s.name}</td>
+            <td>${s.section}</td>
+            <td>${s.studentphone}</td>
+            <td>${s.parentphone}</td>
+            <td>${s.homework}</td>
+            <td>${s.attendance}</td>
+            <td>${s.quiz}</td>
+            <td>
+                <button class="whatsapp" onclick="sendWhatsApp('${s.parentphone}','${s.code}','${s.name}','${s.attendance}','${s.homework}','${s.quiz}')">WhatsApp</button>
+                <button class="primary" onclick="editStudent('${s.id}')">Edit</button>
+                <button class="danger" onclick="deleteStudent('${s.id}')">Delete</button>
+            </td>
         `;
     });
-    document.getElementById("count").innerText = data.length;
 }
 
-// ADD STUDENT
-async function addStudent(){
-    await supabase.from("students").insert([{
-        name: document.getElementById("name").value,
-        section: document.getElementById("section").value,
-        sphone: document.getElementById("sphone").value,
-        pphone: document.getElementById("pphone").value,
-        homework: document.getElementById("homework").value,
-        attendance: document.getElementById("attendance").value,
-        quiz: document.getElementById("quiz").value
-    }]);
-    // clear inputs
+// Delete
+async function deleteStudent(id){
+    const { error } = await supabase.from('students').delete().eq('id', id);
+    if(error){ console.error(error); return; }
+    loadTable();
+}
+
+// Edit
+async function editStudent(id){
+    const { data, error } = await supabase.from('students').select('*').eq('id', id).single();
+    if(error){ console.error(error); return; }
+    editId = id;
+    document.getElementById("code").value = data.code;
+    document.getElementById("name").value = data.name;
+    document.getElementById("section").value = data.section;
+    document.getElementById("studentPhone").value = data.studentphone;
+    document.getElementById("parentPhone").value = data.parentphone;
+    document.getElementById("homework").value = data.homework;
+    document.getElementById("attendance").value = data.attendance;
+    document.getElementById("quiz").value = data.quiz;
+}
+
+// WhatsApp
+function sendWhatsApp(phone, code, name, attendance, homework, quiz){
+    if(!phone) { alert("رقم الهاتف فارغ!"); return; }
+    let cleanPhone = phone.replace(/\D/g,'');
+    if(cleanPhone.length===10 && cleanPhone.startsWith("0")) cleanPhone="20"+cleanPhone.substring(1);
+    else if(cleanPhone.length===9) cleanPhone="20"+cleanPhone;
+    if(cleanPhone.length<11){ alert("رقم الهاتف غير صحيح."); return; }
+    let attendanceArabic = attendance==="Present"?"حاضر":"غائب";
+    let homeworkArabic = homework==="Done"?"تم":"لم يتم";
+    let message = `كود الطالب: ${code}\nاسم الطالب: ${name}\nالحضور: ${attendanceArabic}\nالواجب: ${homeworkArabic}\nالدرجة: ${quiz}`;
+    window.open("https://wa.me/"+cleanPhone+"?text="+encodeURIComponent(message), "_blank");
+}
+
+// Clear
+function clearFields(){
+    document.getElementById("code").value="";
     document.getElementById("name").value="";
-    document.getElementById("sphone").value="";
-    document.getElementById("pphone").value="";
+    document.getElementById("section").value="";
+    document.getElementById("studentPhone").value="";
+    document.getElementById("parentPhone").value="";
+    document.getElementById("homework").value="";
+    document.getElementById("attendance").value="";
     document.getElementById("quiz").value="";
-    load();
+    editId = null;
 }
 
-// DELETE STUDENT
-async function del(id){
-    await supabase.from("students").delete().eq("id", id);
-    load();
-}
+// Excel
+async function downloadExcel(){
+    let filter = document.getElementById("filterSection").value;
+    const { data: students, error } = await supabase.from('students').select('*');
+    if(error){ console.error(error); return; }
 
-// DOWNLOAD CSV
-async function download(){
-    let { data } = await supabase.from("students").select("*");
-    let csv = "Name,Section,Student Phone,Parent Phone,Homework,Attendance,Quiz\n";
-    data.forEach(s=>{
-        csv += `${s.name},${s.section},${s.sphone},${s.pphone},${s.homework},${s.attendance},${s.quiz}\n`;
+    let csv="Code,Name,Section,Student Phone,Parent Phone,Homework,Attendance,Quiz\n";
+    students.forEach(s=>{
+        if(filter!=="All" && s.section!==filter) return;
+        csv+=`${s.code},${s.name},${s.section},${s.studentphone},${s.parentphone},${s.homework},${s.attendance},${s.quiz}\n`;
     });
-    let blob = new Blob([csv], { type: "text/csv" });
-    let a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "students.csv";
-    a.click();
+    let blob = new Blob([csv], {type:"text/csv"});
+    let link=document.createElement("a");
+    link.href=URL.createObjectURL(blob);
+    link.download="students.csv";
+    link.click();
 }
 </script>
+
 </body>
 </html>
