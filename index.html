@@ -12,10 +12,9 @@ body {
     color:white;
 }
 
-/* LOGIN PAGE */
 .container {
     display:flex;
-    height:100vh;
+    min-height:100vh;
 }
 
 .left {
@@ -52,9 +51,12 @@ button {
     margin-top:10px;
 }
 
+button:hover {
+    background:#4f46e5;
+}
+
 .hidden { display:none; }
 
-/* DASHBOARD */
 .dashboard {
     display:flex;
 }
@@ -62,7 +64,7 @@ button {
 .sidebar {
     width:200px;
     background:#020617;
-    height:100vh;
+    min-height:100vh;
     padding:20px;
 }
 
@@ -80,8 +82,7 @@ button {
     background:#1e293b;
     padding:20px;
     border-radius:10px;
-    margin:10px;
-    display:inline-block;
+    margin:10px 0;
     width:200px;
 }
 
@@ -94,10 +95,10 @@ table {
 td, th {
     border:1px solid #444;
     padding:8px;
+    text-align:center;
 }
 </style>
 </head>
-
 <body>
 
 <!-- LOGIN -->
@@ -105,7 +106,6 @@ td, th {
     <div class="left">
         <h1>Welcome Back</h1>
     </div>
-
     <div class="right">
         <h2>Login</h2>
         <input id="user" placeholder="Username">
@@ -119,45 +119,34 @@ td, th {
 
     <div class="sidebar">
         <h3>Menu</h3>
-        <button onclick="showPage('students')">Students</button>
+        <button onclick="showPage()">Students</button>
         <button onclick="logout()">Logout</button>
     </div>
 
     <div class="main">
-
         <h2>Dashboard</h2>
-
         <div class="card">Students: <span id="count">0</span></div>
 
-        <!-- STUDENTS PAGE -->
         <div id="studentsPage">
-
             <h3>Add Student</h3>
-
             <input id="name" placeholder="Name">
-            
             <select id="section">
                 <option>3rd Prep</option>
                 <option>Sec 1</option>
                 <option>Sec 2</option>
                 <option>Sec 3</option>
             </select>
-
             <input id="sphone" placeholder="Student Phone">
             <input id="pphone" placeholder="Parent Phone">
-
             <select id="homework">
                 <option>Done</option>
                 <option>Not Done</option>
             </select>
-
             <select id="attendance">
                 <option>Present</option>
                 <option>Absent</option>
             </select>
-
             <input id="quiz" placeholder="Quiz Degree">
-
             <button onclick="addStudent()">Save</button>
             <button onclick="download()">Download Excel</button>
 
@@ -175,29 +164,27 @@ td, th {
                 </thead>
                 <tbody id="table"></tbody>
             </table>
-
         </div>
 
     </div>
 </div>
 
+<!-- Supabase JS -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
 <script>
-
-// ADMIN LOGIN
-const adminUser = "admin";
-const adminPass = "654321";
-
-// DATA
-let students = JSON.parse(localStorage.getItem("students")) || [];
+// Supabase connection
+const supabaseUrl = "https://uhshlpukhgreezddochz.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVoc2hscHVraGdyZWV6ZGRvY2h6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MzI3MjYsImV4cCI6MjA5MDEwODcyNn0.JPY4_PBPsU-VdyJXgL2FgomTVbFjln3rz_wUnfRdCjA";
+const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
 // LOGIN
 function login(){
-    let u = user.value;
-    let p = pass.value;
-
-    if(u === adminUser && p === adminPass){
-        loginPage.classList.add("hidden");
-        dashboard.classList.remove("hidden");
+    let u = document.getElementById("user").value;
+    let p = document.getElementById("pass").value;
+    if(u === "admin" && p === "654321"){
+        document.getElementById("loginPage").classList.add("hidden");
+        document.getElementById("dashboard").classList.remove("hidden");
         load();
     } else {
         alert("Wrong login");
@@ -209,29 +196,17 @@ function logout(){
     location.reload();
 }
 
-// ADD STUDENT
-function addStudent(){
-    let s = {
-        name:name.value,
-        section:section.value,
-        sphone:sphone.value,
-        pphone:pphone.value,
-        homework:homework.value,
-        attendance:attendance.value,
-        quiz:quiz.value
-    };
-
-    students.push(s);
-    localStorage.setItem("students", JSON.stringify(students));
-    load();
+// SHOW PAGE
+function showPage(){
+    document.getElementById("studentsPage").style.display = "block";
 }
 
-// LOAD TABLE
-function load(){
+// LOAD STUDENTS
+async function load(){
+    let { data } = await supabase.from("students").select("*").order('id', { ascending: true });
     let t = document.getElementById("table");
     t.innerHTML = "";
-
-    students.forEach((s,i)=>{
+    data.forEach(s=>{
         let row = t.insertRow();
         row.innerHTML = `
         <td>${s.name}</td>
@@ -240,36 +215,50 @@ function load(){
         <td>${s.homework}</td>
         <td>${s.attendance}</td>
         <td>${s.quiz}</td>
-        <td><button onclick="del(${i})">Delete</button></td>
+        <td><button onclick="del(${s.id})">Delete</button></td>
         `;
     });
-
-    document.getElementById("count").innerText = students.length;
+    document.getElementById("count").innerText = data.length;
 }
 
-// DELETE
-function del(i){
-    students.splice(i,1);
-    localStorage.setItem("students", JSON.stringify(students));
+// ADD STUDENT
+async function addStudent(){
+    await supabase.from("students").insert([{
+        name: document.getElementById("name").value,
+        section: document.getElementById("section").value,
+        sphone: document.getElementById("sphone").value,
+        pphone: document.getElementById("pphone").value,
+        homework: document.getElementById("homework").value,
+        attendance: document.getElementById("attendance").value,
+        quiz: document.getElementById("quiz").value
+    }]);
+    // clear inputs
+    document.getElementById("name").value="";
+    document.getElementById("sphone").value="";
+    document.getElementById("pphone").value="";
+    document.getElementById("quiz").value="";
+    load();
+}
+
+// DELETE STUDENT
+async function del(id){
+    await supabase.from("students").delete().eq("id", id);
     load();
 }
 
 // DOWNLOAD CSV
-function download(){
+async function download(){
+    let { data } = await supabase.from("students").select("*");
     let csv = "Name,Section,Student Phone,Parent Phone,Homework,Attendance,Quiz\n";
-
-    students.forEach(s=>{
+    data.forEach(s=>{
         csv += `${s.name},${s.section},${s.sphone},${s.pphone},${s.homework},${s.attendance},${s.quiz}\n`;
     });
-
-    let blob = new Blob([csv]);
+    let blob = new Blob([csv], { type: "text/csv" });
     let a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = "students.csv";
     a.click();
 }
-
 </script>
-
 </body>
 </html>
