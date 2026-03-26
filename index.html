@@ -55,8 +55,8 @@ th { background:#f2f2f2; }
         <option>Sec 3</option>
     </select>
 
-    <input type="tel" id="studentPhone" placeholder="Student Phone">
-    <input type="tel" id="parentPhone" placeholder="Parent Phone">
+    <input type="tel" id="studentphone" placeholder="Student Phone">
+    <input type="tel" id="parentphone" placeholder="Parent Phone">
 
     <select id="homework">
         <option value="">Homework</option>
@@ -73,7 +73,7 @@ th { background:#f2f2f2; }
     <input type="number" id="quiz" placeholder="Quiz Degree">
 
     <br><br>
-    <button class="primary" id="saveButton">Save Student</button>
+    <button class="primary" onclick="saveStudent()">Save Student</button>
     <button class="success" onclick="downloadExcel()">Download Excel</button>
     <button class="danger" onclick="logout()">Logout</button>
 
@@ -113,11 +113,6 @@ const admins = [
 
 let editId = null;
 
-// Attach Save button listener AFTER DOM loads
-document.addEventListener("DOMContentLoaded", function() {
-    document.getElementById("saveButton").addEventListener("click", saveStudent);
-});
-
 // Login
 function login() {
     let username = document.getElementById("username").value.trim();
@@ -135,39 +130,34 @@ function logout(){ location.reload(); }
 
 // Save student
 async function saveStudent() {
-    console.log("Save button pressed"); // Debug
     let code = document.getElementById("code").value.trim();
     let name = document.getElementById("name").value.trim();
     let section = document.getElementById("section").value;
-    let studentPhone = document.getElementById("studentPhone").value.trim();
-    let parentPhone = document.getElementById("parentPhone").value.trim();
+    let studentphone = document.getElementById("studentphone").value.trim();
+    let parentphone = document.getElementById("parentphone").value.trim();
     let homework = document.getElementById("homework").value;
     let attendance = document.getElementById("attendance").value;
     let quiz = document.getElementById("quiz").value;
 
-    if(!code || !name || !section || !studentPhone || !parentPhone || !homework || !attendance || !quiz){
+    if(!code || !name || !section || !studentphone || !parentphone || !homework || !attendance || !quiz){
         alert("Fill all fields");
         return;
     }
 
-    try {
-        if(editId){
-            const { error } = await supabase.from('students')
-                .update({ code, name, section, studentPhone, parentPhone, homework, attendance, quiz })
-                .eq('id', editId);
-            if(error){ console.error(error); alert("Update failed"); }
-            editId = null;
-        } else {
-            const { error } = await supabase.from('students')
-                .insert([{ code, name, section, studentPhone, parentPhone, homework, attendance, quiz }]);
-            if(error){ console.error(error); alert("Insert failed"); return; }
-        }
-        clearFields();
-        loadTable();
-    } catch(err){
-        console.error("Supabase error:", err);
-        alert("Something went wrong with Supabase.");
+    if(editId){
+        const { error } = await supabase.from('students')
+            .update({ code, name, section, studentphone, parentphone, homework, attendance, quiz })
+            .eq('id', editId);
+        if(error){ console.error(error); alert("Update failed"); return; }
+        editId = null;
+    } else {
+        const { error } = await supabase.from('students')
+            .insert([{ code, name, section, studentphone, parentphone, homework, attendance, quiz }]);
+        if(error){ console.error(error); alert("Insert failed"); return; }
     }
+
+    clearFields();
+    loadTable();
 }
 
 // Load table
@@ -186,13 +176,13 @@ async function loadTable() {
             <td>${s.code}</td>
             <td>${s.name}</td>
             <td>${s.section}</td>
-            <td>${s.studentPhone}</td>
-            <td>${s.parentPhone}</td>
+            <td>${s.studentphone}</td>
+            <td>${s.parentphone}</td>
             <td>${s.homework}</td>
             <td>${s.attendance}</td>
             <td>${s.quiz}</td>
             <td>
-                <button class="whatsapp" onclick="sendWhatsApp('${s.parentPhone}','${s.code}','${s.name}','${s.attendance}','${s.homework}','${s.quiz}')">WhatsApp</button>
+                <button class="whatsapp" onclick="sendWhatsApp('${s.parentphone}','${s.code}','${s.name}','${s.attendance}','${s.homework}','${s.quiz}')">WhatsApp</button>
                 <button class="primary" onclick="editStudent('${s.id}')">Edit</button>
                 <button class="danger" onclick="deleteStudent('${s.id}')">Delete</button>
             </td>
@@ -215,8 +205,8 @@ async function editStudent(id){
     document.getElementById("code").value = data.code;
     document.getElementById("name").value = data.name;
     document.getElementById("section").value = data.section;
-    document.getElementById("studentPhone").value = data.studentPhone;
-    document.getElementById("parentPhone").value = data.parentPhone;
+    document.getElementById("studentphone").value = data.studentphone;
+    document.getElementById("parentphone").value = data.parentphone;
     document.getElementById("homework").value = data.homework;
     document.getElementById("attendance").value = data.attendance;
     document.getElementById("quiz").value = data.quiz;
@@ -240,8 +230,8 @@ function clearFields(){
     document.getElementById("code").value="";
     document.getElementById("name").value="";
     document.getElementById("section").value="";
-    document.getElementById("studentPhone").value="";
-    document.getElementById("parentPhone").value="";
+    document.getElementById("studentphone").value="";
+    document.getElementById("parentphone").value="";
     document.getElementById("homework").value="";
     document.getElementById("attendance").value="";
     document.getElementById("quiz").value="";
@@ -257,7 +247,7 @@ async function downloadExcel(){
     let csv="Code,Name,Section,Student Phone,Parent Phone,Homework,Attendance,Quiz\n";
     students.forEach(s=>{
         if(filter!=="All" && s.section!==filter) return;
-        csv+=`${s.code},${s.name},${s.section},${s.studentPhone},${s.parentPhone},${s.homework},${s.attendance},${s.quiz}\n`;
+        csv+=`${s.code},${s.name},${s.section},${s.studentphone},${s.parentphone},${s.homework},${s.attendance},${s.quiz}\n`;
     });
     let blob = new Blob([csv], {type:"text/csv"});
     let link=document.createElement("a");
