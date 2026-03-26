@@ -28,7 +28,7 @@ th { background:#f2f2f2; }
 <script>
   const SUPABASE_URL = 'https://uhshlpukhgreezddochz.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVoc2hscHVraGdyZWV6ZGRvY2h6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MzI3MjYsImV4cCI6MjA5MDEwODcyNn0.JPY4_PBPsU-VdyJgL2FgomTVbFjln3rz_wUnfRdCjA';
-  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 </script>
 
 <!-- LOGIN -->
@@ -49,10 +49,10 @@ th { background:#f2f2f2; }
 
     <select id="section">
         <option value="">Select Section</option>
-        <option>3rd prep</option>
-        <option>sec 1</option>
-        <option>sec 2</option>
-        <option>sec 3</option>
+        <option>3rd Prep</option>
+        <option>Sec 1</option>
+        <option>Sec 2</option>
+        <option>Sec 3</option>
     </select>
 
     <input type="tel" id="studentphone" placeholder="Student Phone">
@@ -60,14 +60,14 @@ th { background:#f2f2f2; }
 
     <select id="homework">
         <option value="">Homework</option>
-        <option>done</option>
-        <option>not done</option>
+        <option>Done</option>
+        <option>Not Done</option>
     </select>
 
     <select id="attendance">
         <option value="">Attendance</option>
-        <option>present</option>
-        <option>absent</option>
+        <option>Present</option>
+        <option>Absent</option>
     </select>
 
     <input type="number" id="quiz" placeholder="Quiz Degree">
@@ -81,10 +81,10 @@ th { background:#f2f2f2; }
     <label for="filterSection">Filter by Section:</label>
     <select id="filterSection" onchange="loadTable()">
         <option value="All">All Students</option>
-        <option>3rd prep</option>
-        <option>sec 1</option>
-        <option>sec 2</option>
-        <option>sec 3</option>
+        <option>3rd Prep</option>
+        <option>Sec 1</option>
+        <option>Sec 2</option>
+        <option>Sec 3</option>
     </select>
 
     <table>
@@ -106,7 +106,6 @@ th { background:#f2f2f2; }
 </div>
 
 <script>
-// Admins
 const admins = [
     { user: "sayed", pass: "sayed" },
     { user: "omar", pass: "omar" }
@@ -114,11 +113,11 @@ const admins = [
 
 let editId = null;
 
-// Login
-function login(){
-    let username = document.getElementById("username").value.trim();
-    let password = document.getElementById("password").value.trim();
-    let found = admins.find(a => a.user===username && a.pass===password);
+// LOGIN
+function login() {
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const found = admins.find(a => a.user === username && a.pass === password);
     if(found){
         document.getElementById("loginPage").classList.add("hidden");
         document.getElementById("mainPage").classList.remove("hidden");
@@ -126,19 +125,19 @@ function login(){
     } else { alert("Wrong login credentials"); }
 }
 
-// Logout
+// LOGOUT
 function logout(){ location.reload(); }
 
-// Save student
-async function saveStudent() {
-    let code = document.getElementById("code").value.trim();
-    let name = document.getElementById("name").value.trim();
-    let section = document.getElementById("section").value;
-    let studentphone = document.getElementById("studentphone").value.trim();
-    let parentphone = document.getElementById("parentphone").value.trim();
-    let homework = document.getElementById("homework").value;
-    let attendance = document.getElementById("attendance").value;
-    let quiz = document.getElementById("quiz").value;
+// SAVE STUDENT
+async function saveStudent(){
+    const code = document.getElementById("code").value.trim();
+    const name = document.getElementById("name").value.trim();
+    const section = document.getElementById("section").value;
+    const studentphone = document.getElementById("studentphone").value.trim();
+    const parentphone = document.getElementById("parentphone").value.trim();
+    const homework = document.getElementById("homework").value;
+    const attendance = document.getElementById("attendance").value;
+    const quiz = document.getElementById("quiz").value;
 
     if(!code || !name || !section || !studentphone || !parentphone || !homework || !attendance || !quiz){
         alert("Fill all fields");
@@ -146,13 +145,13 @@ async function saveStudent() {
     }
 
     if(editId){
-        const { error } = await supabaseClient.from('students')
+        const { error } = await supabase.from('students')
             .update({ code, name, section, studentphone, parentphone, homework, attendance, quiz })
             .eq('id', editId);
         if(error){ console.error(error); alert("Update failed"); return; }
         editId = null;
     } else {
-        const { error } = await supabaseClient.from('students')
+        const { error } = await supabase.from('students')
             .insert([{ code, name, section, studentphone, parentphone, homework, attendance, quiz }]);
         if(error){ console.error(error); alert("Insert failed"); return; }
     }
@@ -161,18 +160,18 @@ async function saveStudent() {
     loadTable();
 }
 
-// Load table
-async function loadTable() {
-    let filter = document.getElementById("filterSection").value;
-    const { data: students, error } = await supabaseClient.from('students').select('*');
+// LOAD TABLE
+async function loadTable(){
+    const filter = document.getElementById("filterSection").value;
+    const { data: students, error } = await supabase.from('students').select('*');
     if(error){ console.error(error); return; }
 
-    let table = document.getElementById("dataTable");
+    const table = document.getElementById("dataTable");
     table.innerHTML = "";
 
-    students.forEach(s => {
-        if(filter!=="All" && s.section!==filter) return;
-        let row = table.insertRow();
+    students.forEach(s=>{
+        if(filter !== "All" && s.section !== filter) return;
+        const row = table.insertRow();
         row.innerHTML = `
             <td>${s.code}</td>
             <td>${s.name}</td>
@@ -191,16 +190,9 @@ async function loadTable() {
     });
 }
 
-// Delete
-async function deleteStudent(id){
-    const { error } = await supabaseClient.from('students').delete().eq('id', id);
-    if(error){ console.error(error); return; }
-    loadTable();
-}
-
-// Edit
+// EDIT STUDENT
 async function editStudent(id){
-    const { data, error } = await supabaseClient.from('students').select('*').eq('id', id).single();
+    const { data, error } = await supabase.from('students').select('*').eq('id', id).single();
     if(error){ console.error(error); return; }
     editId = id;
     document.getElementById("code").value = data.code;
@@ -213,20 +205,28 @@ async function editStudent(id){
     document.getElementById("quiz").value = data.quiz;
 }
 
-// WhatsApp
+// DELETE STUDENT
+async function deleteStudent(id){
+    const { error } = await supabase.from('students').delete().eq('id', id);
+    if(error){ console.error(error); return; }
+    loadTable();
+}
+
+// WHATSAPP
 function sendWhatsApp(phone, code, name, attendance, homework, quiz){
     if(!phone) { alert("رقم الهاتف فارغ!"); return; }
     let cleanPhone = phone.replace(/\D/g,'');
     if(cleanPhone.length===10 && cleanPhone.startsWith("0")) cleanPhone="20"+cleanPhone.substring(1);
     else if(cleanPhone.length===9) cleanPhone="20"+cleanPhone;
     if(cleanPhone.length<11){ alert("رقم الهاتف غير صحيح."); return; }
-    let attendanceArabic = attendance==="present"?"حاضر":"غائب";
-    let homeworkArabic = homework==="done"?"تم":"لم يتم";
+
+    let attendanceArabic = attendance==="Present"?"حاضر":"غائب";
+    let homeworkArabic = homework==="Done"?"تم":"لم يتم";
     let message = `كود الطالب: ${code}\nاسم الطالب: ${name}\nالحضور: ${attendanceArabic}\nالواجب: ${homeworkArabic}\nالدرجة: ${quiz}`;
     window.open("https://wa.me/"+cleanPhone+"?text="+encodeURIComponent(message), "_blank");
 }
 
-// Clear
+// CLEAR FORM
 function clearFields(){
     document.getElementById("code").value="";
     document.getElementById("name").value="";
@@ -239,10 +239,10 @@ function clearFields(){
     editId = null;
 }
 
-// Excel
+// DOWNLOAD EXCEL
 async function downloadExcel(){
-    let filter = document.getElementById("filterSection").value;
-    const { data: students, error } = await supabaseClient.from('students').select('*');
+    const filter = document.getElementById("filterSection").value;
+    const { data: students, error } = await supabase.from('students').select('*');
     if(error){ console.error(error); return; }
 
     let csv="Code,Name,Section,Student Phone,Parent Phone,Homework,Attendance,Quiz\n";
@@ -250,10 +250,11 @@ async function downloadExcel(){
         if(filter!=="All" && s.section!==filter) return;
         csv+=`${s.code},${s.name},${s.section},${s.studentphone},${s.parentphone},${s.homework},${s.attendance},${s.quiz}\n`;
     });
-    let blob = new Blob([csv], {type:"text/csv"});
-    let link=document.createElement("a");
-    link.href=URL.createObjectURL(blob);
-    link.download="students.csv";
+
+    const blob = new Blob([csv], {type:"text/csv"});
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "students.csv";
     link.click();
 }
 </script>
