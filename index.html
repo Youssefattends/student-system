@@ -26,11 +26,10 @@ th { background:#f2f2f2; }
 <!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const SUPABASE_URL = 'https://uhshlpukhgreezddochz.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVoc2hscHVraGdyZWV6ZGRvY2h6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MzI3MjYsImV4cCI6MjA5MDEwODcyNn0.JPY4_PBPsU-VdyJgL2FgomTVbFjln3rz_wUnfRdCjA';
-
-// Only declare supabase once
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // Initialize Supabase once
+  const SUPABASE_URL = 'https://uhshlpukhgreezddochz.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVoc2hscHVraGdyZWV6ZGRvY2h6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MzI3MjYsImV4cCI6MjA5MDEwODcyNn0.JPY4_PBPsU-VdyJXgL2FgomTVbFjln3rz_wUnfRdCjA';
+  const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 </script>
 
 <!-- LOGIN -->
@@ -57,8 +56,8 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         <option>Sec 3</option>
     </select>
 
-    <input type="tel" id="studentPhone" placeholder="Student Phone">
-    <input type="tel" id="parentPhone" placeholder="Parent Phone">
+    <input type="tel" id="studentphone" placeholder="Student Phone">
+    <input type="tel" id="parentphone" placeholder="Parent Phone">
 
     <select id="homework">
         <option value="">Homework</option>
@@ -115,7 +114,7 @@ const admins = [
 
 let editId = null;
 
-// Login
+// LOGIN
 function login() {
     const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value.trim();
@@ -127,16 +126,16 @@ function login() {
     } else { alert("Wrong login credentials"); }
 }
 
-// Logout
+// LOGOUT
 function logout(){ location.reload(); }
 
-// Save student
-async function saveStudent() {
+// SAVE STUDENT
+async function saveStudent(){
     const code = document.getElementById("code").value.trim();
     const name = document.getElementById("name").value.trim();
     const section = document.getElementById("section").value;
-    const studentphone = document.getElementById("studentPhone").value.trim();
-    const parentphone = document.getElementById("parentPhone").value.trim();
+    const studentphone = document.getElementById("studentphone").value.trim();
+    const parentphone = document.getElementById("parentphone").value.trim();
     const homework = document.getElementById("homework").value;
     const attendance = document.getElementById("attendance").value;
     const quiz = document.getElementById("quiz").value;
@@ -147,14 +146,11 @@ async function saveStudent() {
     }
 
     if(editId){
-        const { error } = await supabaseClient.from('students')
-            .update({ code, name, section, studentphone, parentphone, homework, attendance, quiz })
-            .eq('id', editId);
+        const { error } = await supabase.from('students').update({code,name,section,studentphone,parentphone,homework,attendance,quiz}).eq('id', editId);
         if(error){ console.error(error); alert("Update failed"); return; }
         editId = null;
     } else {
-        const { error } = await supabaseClient.from('students')
-            .insert([{ code, name, section, studentphone, parentphone, homework, attendance, quiz }]);
+        const { error } = await supabase.from('students').insert([{code,name,section,studentphone,parentphone,homework,attendance,quiz}]);
         if(error){ console.error(error); alert("Insert failed"); return; }
     }
 
@@ -162,16 +158,16 @@ async function saveStudent() {
     loadTable();
 }
 
-// Load table
-async function loadTable() {
+// LOAD TABLE
+async function loadTable(){
     const filter = document.getElementById("filterSection").value;
-    const { data: students, error } = await supabaseClient.from('students').select('*');
+    const { data: students, error } = await supabase.from('students').select('*');
     if(error){ console.error(error); return; }
 
     const table = document.getElementById("dataTable");
     table.innerHTML = "";
 
-    students.forEach(s => {
+    students.forEach(s=>{
         if(filter!=="All" && s.section!==filter) return;
         const row = table.insertRow();
         row.innerHTML = `
@@ -192,58 +188,58 @@ async function loadTable() {
     });
 }
 
-// Delete
+// DELETE STUDENT
 async function deleteStudent(id){
-    const { error } = await supabaseClient.from('students').delete().eq('id', id);
+    const { error } = await supabase.from('students').delete().eq('id',id);
     if(error){ console.error(error); return; }
     loadTable();
 }
 
-// Edit
+// EDIT STUDENT
 async function editStudent(id){
-    const { data, error } = await supabaseClient.from('students').select('*').eq('id', id).single();
+    const { data, error } = await supabase.from('students').select('*').eq('id',id).single();
     if(error){ console.error(error); return; }
     editId = id;
     document.getElementById("code").value = data.code;
     document.getElementById("name").value = data.name;
     document.getElementById("section").value = data.section;
-    document.getElementById("studentPhone").value = data.studentphone;
-    document.getElementById("parentPhone").value = data.parentphone;
+    document.getElementById("studentphone").value = data.studentphone;
+    document.getElementById("parentphone").value = data.parentphone;
     document.getElementById("homework").value = data.homework;
     document.getElementById("attendance").value = data.attendance;
     document.getElementById("quiz").value = data.quiz;
 }
 
-// WhatsApp
+// WHATSAPP
 function sendWhatsApp(phone, code, name, attendance, homework, quiz){
-    if(!phone) { alert("رقم الهاتف فارغ!"); return; }
+    if(!phone){ alert("رقم الهاتف فارغ!"); return; }
     let cleanPhone = phone.replace(/\D/g,'');
     if(cleanPhone.length===10 && cleanPhone.startsWith("0")) cleanPhone="20"+cleanPhone.substring(1);
     else if(cleanPhone.length===9) cleanPhone="20"+cleanPhone;
     if(cleanPhone.length<11){ alert("رقم الهاتف غير صحيح."); return; }
-    const attendanceArabic = attendance==="Present"?"حاضر":"غائب";
-    const homeworkArabic = homework==="Done"?"تم":"لم يتم";
-    const message = `كود الطالب: ${code}\nاسم الطالب: ${name}\nالحضور: ${attendanceArabic}\nالواجب: ${homeworkArabic}\nالدرجة: ${quiz}`;
+    let attendanceArabic = attendance==="Present"?"حاضر":"غائب";
+    let homeworkArabic = homework==="Done"?"تم":"لم يتم";
+    let message = `كود الطالب: ${code}\nاسم الطالب: ${name}\nالحضور: ${attendanceArabic}\nالواجب: ${homeworkArabic}\nالدرجة: ${quiz}`;
     window.open("https://wa.me/"+cleanPhone+"?text="+encodeURIComponent(message), "_blank");
 }
 
-// Clear form
+// CLEAR FORM
 function clearFields(){
     document.getElementById("code").value="";
     document.getElementById("name").value="";
     document.getElementById("section").value="";
-    document.getElementById("studentPhone").value="";
-    document.getElementById("parentPhone").value="";
+    document.getElementById("studentphone").value="";
+    document.getElementById("parentphone").value="";
     document.getElementById("homework").value="";
     document.getElementById("attendance").value="";
     document.getElementById("quiz").value="";
     editId = null;
 }
 
-// Download Excel
+// DOWNLOAD EXCEL
 async function downloadExcel(){
     const filter = document.getElementById("filterSection").value;
-    const { data: students, error } = await supabaseClient.from('students').select('*');
+    const { data: students, error } = await supabase.from('students').select('*');
     if(error){ console.error(error); return; }
 
     let csv="Code,Name,Section,Student Phone,Parent Phone,Homework,Attendance,Quiz\n";
@@ -251,6 +247,7 @@ async function downloadExcel(){
         if(filter!=="All" && s.section!==filter) return;
         csv+=`${s.code},${s.name},${s.section},${s.studentphone},${s.parentphone},${s.homework},${s.attendance},${s.quiz}\n`;
     });
+
     const blob = new Blob([csv], {type:"text/csv"});
     const link=document.createElement("a");
     link.href=URL.createObjectURL(blob);
@@ -258,5 +255,6 @@ async function downloadExcel(){
     link.click();
 }
 </script>
+
 </body>
 </html>
