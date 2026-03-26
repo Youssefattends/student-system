@@ -1,315 +1,274 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Student Management & Video System</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body { font-family: Arial; background: linear-gradient(135deg,#4e73df,#1cc88a); margin:0; padding:0;}
-        .card { background:white; width:95%; max-width:1200px; margin:30px auto; padding:20px; border-radius:10px; box-shadow:0 8px 20px rgba(0,0,0,0.2);}
-        input, select { padding:8px; margin:5px; border-radius:5px; border:1px solid #ccc; width:180px;}
-        button { padding:8px 12px; border:none; border-radius:5px; cursor:pointer; font-weight:bold;}
-        .primary { background:#4e73df; color:white;}
-        .success { background:#1cc88a; color:white;}
-        .danger { background:#e74a3b; color:white;}
-        .whatsapp { background:#25D366; color:white;}
-        button:hover { opacity:0.85;}
-        table { width:100%; margin-top:20px; border-collapse:collapse;}
-        th, td { padding:8px; border-bottom:1px solid #ddd; text-align:center;}
-        th { background:#f2f2f2;}
-        .hidden { display:none;}
-        @media(max-width:768px){ input, select { width:100%; display:block;} }
-    </style>
+<meta charset="UTF-8">
+<title>Student Dashboard</title>
+
+<style>
+body {
+    margin:0;
+    font-family: Arial;
+    background:#0f172a;
+    color:white;
+}
+
+/* LOGIN PAGE */
+.container {
+    display:flex;
+    height:100vh;
+}
+
+.left {
+    flex:1;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background: linear-gradient(135deg,#6366f1,#06b6d4);
+}
+
+.right {
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    padding:40px;
+}
+
+input, select {
+    padding:10px;
+    margin:5px 0;
+    border-radius:8px;
+    border:none;
+    width:100%;
+}
+
+button {
+    padding:10px;
+    border:none;
+    border-radius:8px;
+    background:#6366f1;
+    color:white;
+    cursor:pointer;
+    margin-top:10px;
+}
+
+.hidden { display:none; }
+
+/* DASHBOARD */
+.dashboard {
+    display:flex;
+}
+
+.sidebar {
+    width:200px;
+    background:#020617;
+    height:100vh;
+    padding:20px;
+}
+
+.sidebar button {
+    width:100%;
+    margin:10px 0;
+}
+
+.main {
+    flex:1;
+    padding:20px;
+}
+
+.card {
+    background:#1e293b;
+    padding:20px;
+    border-radius:10px;
+    margin:10px;
+    display:inline-block;
+    width:200px;
+}
+
+table {
+    width:100%;
+    margin-top:20px;
+    border-collapse:collapse;
+}
+
+td, th {
+    border:1px solid #444;
+    padding:8px;
+}
+</style>
 </head>
+
 <body>
 
-<!-- LOGIN PAGE -->
-<div id="loginPage" class="card">
-    <h2>Login</h2>
-    <button class="primary" onclick="showAdminLogin()">Admin</button>
-    <button class="success" onclick="showStudentPage()">Student</button>
+<!-- LOGIN -->
+<div id="loginPage" class="container">
+    <div class="left">
+        <h1>Welcome Back</h1>
+    </div>
 
-    <div id="adminLoginBox" class="hidden">
-        <br>
-        <input type="text" id="username" placeholder="Username">
-        <input type="password" id="password" placeholder="Password">
-        <br><br>
-        <button class="primary" onclick="login()">Login</button>
+    <div class="right">
+        <h2>Login</h2>
+        <input id="user" placeholder="Username">
+        <input id="pass" type="password" placeholder="Password">
+        <button onclick="login()">Login</button>
     </div>
 </div>
 
-<!-- ADMIN PAGE -->
-<div id="adminPage" class="card hidden">
-    <h2>Admin Panel</h2>
+<!-- DASHBOARD -->
+<div id="dashboard" class="hidden dashboard">
 
-    <button class="danger" onclick="logout()">Logout</button>
-    <hr>
+    <div class="sidebar">
+        <h3>Menu</h3>
+        <button onclick="showPage('students')">Students</button>
+        <button onclick="logout()">Logout</button>
+    </div>
 
-    <h3>Add / Edit Student</h3>
+    <div class="main">
 
-    <input type="text" id="code" placeholder="Code">
-    <input type="text" id="name" placeholder="Student Name">
+        <h2>Dashboard</h2>
 
-    <select id="section">
-        <option value="">Select Section</option>
-        <option>3rd Prep</option>
-        <option>Sec 1</option>
-        <option>Sec 2</option>
-        <option>Sec 3</option>
-    </select>
+        <div class="card">Students: <span id="count">0</span></div>
 
-    <input type="tel" id="studentPhone" placeholder="Student Phone">
-    <input type="tel" id="parentPhone" placeholder="Parent Phone">
+        <!-- STUDENTS PAGE -->
+        <div id="studentsPage">
 
-    <select id="homework">
-        <option value="">Homework</option>
-        <option>Done</option>
-        <option>Not Done</option>
-    </select>
+            <h3>Add Student</h3>
 
-    <select id="attendance">
-        <option value="">Attendance</option>
-        <option>Present</option>
-        <option>Absent</option>
-    </select>
+            <input id="name" placeholder="Name">
+            
+            <select id="section">
+                <option>3rd Prep</option>
+                <option>Sec 1</option>
+                <option>Sec 2</option>
+                <option>Sec 3</option>
+            </select>
 
-    <input type="number" id="quiz" placeholder="Quiz Degree">
+            <input id="sphone" placeholder="Student Phone">
+            <input id="pphone" placeholder="Parent Phone">
 
-    <br><br>
-    <button class="primary" onclick="saveStudent()">Save Student</button>
+            <select id="homework">
+                <option>Done</option>
+                <option>Not Done</option>
+            </select>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Code</th>
-                <th>Name</th>
-                <th>Section</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody id="dataTable"></tbody>
-    </table>
+            <select id="attendance">
+                <option>Present</option>
+                <option>Absent</option>
+            </select>
 
-    <hr>
-    <h3>Video Lessons Management</h3>
+            <input id="quiz" placeholder="Quiz Degree">
 
-    <input type="text" id="videoTitle" placeholder="Video Title">
-    <input type="text" id="videoSection" placeholder="Section">
-    <input type="text" id="allowedCode" placeholder="Allowed Student Code">
-    <input type="file" id="videoFile" accept="video/*">
+            <button onclick="addStudent()">Save</button>
+            <button onclick="download()">Download Excel</button>
 
-    <button class="success" onclick="uploadVideo()">Upload Video</button>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Section</th>
+                        <th>Phones</th>
+                        <th>HW</th>
+                        <th>Attend</th>
+                        <th>Quiz</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="table"></tbody>
+            </table>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Section</th>
-                <th>Code</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody id="videoTable"></tbody>
-    </table>
-</div>
+        </div>
 
-<!-- STUDENT PAGE -->
-<div id="studentPage" class="card hidden">
-    <h2>Student Video Dashboard</h2>
-
-    <input type="text" id="studentCodeLogin" placeholder="Enter Your Code">
-    <button class="primary" onclick="studentLogin()">Enter</button>
-    <button class="danger" onclick="logout()">Logout</button>
-
-    <div id="studentVideos"></div>
+    </div>
 </div>
 
 <script>
-const admins = [
-    { user: "sayed", pass: "sayed" },
-    { user: "omar", pass: "omar" }
-];
 
-const MASTER_KEY = "students_master_storage";
-const VIDEO_KEY = "videos_master_storage";
+// ADMIN LOGIN
+const adminUser = "admin";
+const adminPass = "654321";
 
-let students = JSON.parse(localStorage.getItem(MASTER_KEY)) || [];
-let videos = JSON.parse(localStorage.getItem(VIDEO_KEY)) || [];
-let editIndex = -1;
+// DATA
+let students = JSON.parse(localStorage.getItem("students")) || [];
 
-/* ================= LOGIN ================= */
-
-function showAdminLogin(){
-    document.getElementById("adminLoginBox").classList.remove("hidden");
-}
-
-function showStudentPage(){
-    document.getElementById("loginPage").classList.add("hidden");
-    document.getElementById("studentPage").classList.remove("hidden");
-}
-
+// LOGIN
 function login(){
-    let username = document.getElementById("username").value.trim();
-    let password = document.getElementById("password").value.trim();
+    let u = user.value;
+    let p = pass.value;
 
-    let found = admins.find(a => a.user === username && a.pass === password);
-
-    if(found){
-        document.getElementById("loginPage").classList.add("hidden");
-        document.getElementById("adminPage").classList.remove("hidden");
-        loadTable();
-        loadVideos();
+    if(u === adminUser && p === adminPass){
+        loginPage.classList.add("hidden");
+        dashboard.classList.remove("hidden");
+        load();
     } else {
-        alert("Wrong credentials");
+        alert("Wrong login");
     }
 }
 
+// LOGOUT
 function logout(){
     location.reload();
 }
 
-/* ================= STUDENTS ================= */
-
-function saveStudent(){
-    let student = {
-        code: code.value.trim(),
-        name: name.value.trim(),
-        section: section.value,
-        studentPhone: studentPhone.value.trim(),
-        parentPhone: parentPhone.value.trim(),
-        homework: homework.value,
-        attendance: attendance.value,
-        quiz: quiz.value
+// ADD STUDENT
+function addStudent(){
+    let s = {
+        name:name.value,
+        section:section.value,
+        sphone:sphone.value,
+        pphone:pphone.value,
+        homework:homework.value,
+        attendance:attendance.value,
+        quiz:quiz.value
     };
 
-    if(!student.code || !student.name){
-        alert("Fill required fields");
-        return;
-    }
-
-    if(editIndex === -1) students.push(student);
-    else { students[editIndex] = student; editIndex = -1; }
-
-    localStorage.setItem(MASTER_KEY, JSON.stringify(students));
-    clearFields();
-    loadTable();
+    students.push(s);
+    localStorage.setItem("students", JSON.stringify(students));
+    load();
 }
 
-function loadTable(){
-    let table = document.getElementById("dataTable");
-    table.innerHTML = "";
+// LOAD TABLE
+function load(){
+    let t = document.getElementById("table");
+    t.innerHTML = "";
 
     students.forEach((s,i)=>{
-        let row = table.insertRow();
+        let row = t.insertRow();
         row.innerHTML = `
-            <td>${s.code}</td>
-            <td>${s.name}</td>
-            <td>${s.section}</td>
-            <td>
-                <button class="primary" onclick="editStudent(${i})">Edit</button>
-                <button class="danger" onclick="deleteStudent(${i})">Delete</button>
-            </td>
+        <td>${s.name}</td>
+        <td>${s.section}</td>
+        <td>${s.sphone}<br>${s.pphone}</td>
+        <td>${s.homework}</td>
+        <td>${s.attendance}</td>
+        <td>${s.quiz}</td>
+        <td><button onclick="del(${i})">Delete</button></td>
         `;
     });
+
+    document.getElementById("count").innerText = students.length;
 }
 
-function editStudent(i){
-    let s = students[i];
-    code.value = s.code;
-    name.value = s.name;
-    section.value = s.section;
-    studentPhone.value = s.studentPhone;
-    parentPhone.value = s.parentPhone;
-    homework.value = s.homework;
-    attendance.value = s.attendance;
-    quiz.value = s.quiz;
-    editIndex = i;
-}
-
-function deleteStudent(i){
+// DELETE
+function del(i){
     students.splice(i,1);
-    localStorage.setItem(MASTER_KEY, JSON.stringify(students));
-    loadTable();
+    localStorage.setItem("students", JSON.stringify(students));
+    load();
 }
 
-function clearFields(){
-    document.querySelectorAll("#adminPage input").forEach(i=>i.value="");
-}
+// DOWNLOAD CSV
+function download(){
+    let csv = "Name,Section,Student Phone,Parent Phone,Homework,Attendance,Quiz\n";
 
-/* ================= VIDEOS ================= */
-
-function uploadVideo(){
-    let title = videoTitle.value.trim();
-    let section = videoSection.value.trim();
-    let code = allowedCode.value.trim();
-    let file = videoFile.files[0];
-
-    if(!title || !section || !code || !file){
-        alert("Fill all video fields");
-        return;
-    }
-
-    let reader = new FileReader();
-    reader.onload = function(e){
-        videos.push({
-            title,
-            section,
-            code,
-            data: e.target.result
-        });
-
-        localStorage.setItem(VIDEO_KEY, JSON.stringify(videos));
-        loadVideos();
-    };
-    reader.readAsDataURL(file);
-}
-
-function loadVideos(){
-    let table = document.getElementById("videoTable");
-    table.innerHTML = "";
-
-    videos.forEach((v,i)=>{
-        let row = table.insertRow();
-        row.innerHTML = `
-            <td>${v.title}</td>
-            <td>${v.section}</td>
-            <td>${v.code}</td>
-            <td>
-                <button class="danger" onclick="deleteVideo(${i})">Delete</button>
-            </td>
-        `;
+    students.forEach(s=>{
+        csv += `${s.name},${s.section},${s.sphone},${s.pphone},${s.homework},${s.attendance},${s.quiz}\n`;
     });
+
+    let blob = new Blob([csv]);
+    let a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "students.csv";
+    a.click();
 }
 
-function deleteVideo(i){
-    videos.splice(i,1);
-    localStorage.setItem(VIDEO_KEY, JSON.stringify(videos));
-    loadVideos();
-}
-
-/* ================= STUDENT DASHBOARD ================= */
-
-function studentLogin(){
-    let codeInput = studentCodeLogin.value.trim();
-    let container = document.getElementById("studentVideos");
-    container.innerHTML = "";
-
-    let allowed = videos.filter(v => v.code === codeInput);
-
-    if(allowed.length === 0){
-        container.innerHTML = "<p>No videos available.</p>";
-        return;
-    }
-
-    allowed.forEach(v=>{
-        container.innerHTML += `
-            <h3>${v.title}</h3>
-            <video width="100%" controls>
-                <source src="${v.data}" type="video/mp4">
-            </video>
-            <hr>
-        `;
-    });
-}
 </script>
 
 </body>
