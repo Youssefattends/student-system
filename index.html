@@ -2,48 +2,75 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Student Management System</title>
+<title>Student System</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body { font-family: Arial; background: linear-gradient(135deg,#4e73df,#1cc88a); }
-.card { background:#fff; padding:20px; margin:20px auto; max-width:1000px; border-radius:10px;}
-input,select { margin:5px; padding:8px; width:180px;}
-button { padding:8px 12px; margin:5px; cursor:pointer;}
-.hidden { display:none; }
+body {
+  font-family: Arial;
+  background: linear-gradient(135deg,#4e73df,#1cc88a);
+}
+
+.card {
+  background:white;
+  max-width:1000px;
+  margin:30px auto;
+  padding:20px;
+  border-radius:10px;
+}
+
+input, select {
+  padding:8px;
+  margin:5px;
+  width:180px;
+}
+
+button {
+  padding:8px 12px;
+  border:none;
+  border-radius:5px;
+  cursor:pointer;
+}
+
+.primary { background:#4e73df; color:white; }
+.danger { background:#e74a3b; color:white; }
+
+table {
+  width:100%;
+  margin-top:20px;
+  border-collapse:collapse;
+}
+
+th, td {
+  border:1px solid #ddd;
+  padding:8px;
+  text-align:center;
+}
 </style>
 </head>
 
 <body>
 
-<!-- ✅ Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const supabase = window.supabase.createClient(
   "https://uhshlpukhgreezddochz.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVoc2hscHVraGdyZWV6ZGRvY2h6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MzI3MjYsImV4cCI6MjA5MDEwODcyNn0.JPY4_PBPsU-VdyJXgL2FgomTVbFjln3rz_wUnfRdCjA"
 );
 </script>
 
-<!-- LOGIN -->
-<div id="loginPage" class="card">
-<h2>Login</h2>
-<input id="username" placeholder="username">
-<input id="password" type="password" placeholder="password">
-<br>
-<button onclick="login()">Login</button>
-</div>
-
-<!-- MAIN -->
-<div id="mainPage" class="card hidden">
-<h2>طلاب</h2>
+<div class="card">
+<h2>Student System</h2>
 
 <input id="code" placeholder="Code">
 <input id="name" placeholder="Name">
+
 <select id="section">
 <option value="">Section</option>
 <option>3rd Prep</option>
 <option>Sec 1</option>
+<option>Sec 2</option>
+<option>Sec 3</option>
 </select>
 
 <input id="studentphone" placeholder="Student Phone">
@@ -63,57 +90,33 @@ const supabase = window.supabase.createClient(
 
 <input id="quiz" type="number" placeholder="Quiz">
 
-<br>
-<button onclick="saveStudent()">Save</button>
-<button onclick="logout()">Logout</button>
+<br><br>
+<button class="primary" onclick="saveStudent()">Save Student</button>
 
-<table border="1" width="100%">
+<table>
 <thead>
 <tr>
-<th>Code</th><th>Name</th><th>Section</th><th>Actions</th>
+<th>Code</th>
+<th>Name</th>
+<th>Section</th>
+<th>Actions</th>
 </tr>
 </thead>
 <tbody id="dataTable"></tbody>
 </table>
-
 </div>
 
 <script>
-const admins = [
-  {user:"sayed", pass:"sayed"},
-  {user:"omar", pass:"omar"}
-];
-
 let editId=null;
 
-// ✅ LOGIN FIXED
-function login(){
-  const username = document.getElementById("username").value;
-  const password = document.getElementById("password").value;
-
-  const ok = admins.find(a=>a.user===username && a.pass===password);
-
-  if(ok){
-    document.getElementById("loginPage").classList.add("hidden");
-    document.getElementById("mainPage").classList.remove("hidden");
-    loadTable();
-  }else{
-    alert("Wrong login");
-  }
-}
-
-function logout(){
-  location.reload();
-}
-
-// ✅ SAVE
+// SAVE
 async function saveStudent(){
   const code = document.getElementById("code").value;
   const name = document.getElementById("name").value;
   const section = document.getElementById("section").value;
 
   if(!code || !name || !section){
-    alert("fill data");
+    alert("Fill required fields");
     return;
   }
 
@@ -121,17 +124,22 @@ async function saveStudent(){
     await supabase.from("students")
     .update({code,name,section})
     .eq("id",editId);
-
     editId=null;
-  }else{
-    await supabase.from("students")
+  } else {
+    const {error} = await supabase.from("students")
     .insert([{code,name,section}]);
+
+    if(error){
+      console.error(error);
+      alert("ERROR: "+error.message);
+      return;
+    }
   }
 
   loadTable();
 }
 
-// ✅ LOAD
+// LOAD
 async function loadTable(){
   const {data} = await supabase.from("students").select("*");
 
@@ -139,14 +147,14 @@ async function loadTable(){
   table.innerHTML="";
 
   data.forEach(s=>{
-    table.innerHTML+=`
+    table.innerHTML += `
     <tr>
       <td>${s.code}</td>
       <td>${s.name}</td>
       <td>${s.section}</td>
       <td>
         <button onclick="edit('${s.id}')">Edit</button>
-        <button onclick="del('${s.id}')">Delete</button>
+        <button class="danger" onclick="del('${s.id}')">Delete</button>
       </td>
     </tr>`;
   });
@@ -169,6 +177,9 @@ async function edit(id){
   document.getElementById("name").value=data.name;
   document.getElementById("section").value=data.section;
 }
+
+// LOAD ON START
+loadTable();
 </script>
 
 </body>
