@@ -127,8 +127,6 @@ async function saveStudent(){
         alert("Fill all fields"); return;
     }
 
-    if(!parentPhone.startsWith("02")) parentPhone="02"+parentPhone;
-
     let { error } = await client.from("students").insert([{
         code,name,section,
         studentphone:studentPhone,
@@ -143,7 +141,7 @@ async function saveStudent(){
     alert("Saved ✅");
 }
 
-// LOAD TABLE
+// LOAD
 async function loadTable(){
     let filter=document.getElementById("filterSection").value;
     let { data } = await client.from("students").select("*");
@@ -165,8 +163,8 @@ async function loadTable(){
         <td>${s.attendance}</td>
         <td>${s.quiz}</td>
         <td>
-        <button class="whatsapp" onclick="sendWhatsApp('${s.parentphone}','${s.code}','${s.name}','${s.attendance}','${s.homework}','${s.quiz}')">WhatsApp</button>
-        <button onclick="deleteStudent(${s.id})" class="danger">Delete</button>
+            <button class="whatsapp" onclick="sendWhatsApp('${s.parentphone}','${s.code}','${s.name}','${s.attendance}','${s.homework}','${s.quiz}')">WhatsApp</button>
+            <button onclick="deleteStudent(${s.id})" class="danger">Delete</button>
         </td>`;
     });
 }
@@ -182,13 +180,16 @@ function clearFields(){
     document.querySelectorAll("input,select").forEach(e=>e.value="");
 }
 
-// WHATSAPP BUTTON FUNCTION
+// WHATSAPP
 function sendWhatsApp(parentPhone, code, name, attendance, homework, quiz){
     if(!parentPhone){ alert("Parent number missing"); return; }
-    let phone = parentPhone.replace(/\D/g,''); // remove non-digit chars
-    if(phone.length===10 && phone.startsWith("0")) phone="20"+phone.substring(1);
-    else if(phone.length===9) phone="20"+phone;
-    if(phone.length<11){ alert("Invalid phone number"); return; }
+
+    // Remove leading 0 or 01 and non-digit characters
+    let phone = parentPhone.replace(/\D/g,''); // remove non-digits
+    if(phone.startsWith("01")) phone = phone.substring(1);
+    if(phone.length === 9) phone = "20" + phone; // Egypt country code
+
+    if(phone.length < 11){ alert("Invalid phone number"); return; }
 
     let message = `Code: ${code}\nName: ${name}\nAttendance: ${attendance}\nHomework: ${homework}\nQuiz: ${quiz}`;
     let url = "https://wa.me/"+phone+"?text="+encodeURIComponent(message);
