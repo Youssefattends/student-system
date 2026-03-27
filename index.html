@@ -6,9 +6,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body {
-  font-family: Arial, sans-serif;
+  font-family: Arial;
   background: linear-gradient(135deg,#4e73df,#1cc88a);
-  margin:0; padding:0;
+  margin:0;
+  padding:0;
 }
 .card {
   background:white;
@@ -32,107 +33,119 @@ button {
 .success { background:#1cc88a; color:white; }
 .danger { background:#e74a3b; color:white; }
 .hidden { display:none; }
-table { width:100%; margin-top:20px; border-collapse:collapse; }
-th, td { border:1px solid #ddd; padding:8px; text-align:center; }
+table {
+  width:100%;
+  margin-top:20px;
+  border-collapse:collapse;
+}
+th, td {
+  border:1px solid #ddd;
+  padding:8px;
+  text-align:center;
+}
 </style>
 </head>
 <body>
 
+<!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const supabase = window.supabase.createClient(
-  "https://uhshlpukhgreezddochz.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVoc2hscHVraGdyZWV6ZGRvY2h6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MzI3MjYsImV4cCI6MjA5MDEwODcyNn0.JPY4_PBPsU-VdyJXgL2FgomTVbFjln3rz_wUnfRdCjA"
-);
+const SUPABASE_URL = "https://uhshlpukhgreezddochz.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVoc2hscHVraGdyZWV6ZGRvY2h6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MzI3MjYsImV4cCI6MjA5MDEwODcyNn0.JPY4_PBPsU-VdyJXgL2FgomTVbFjln3rz_wUnfRdCjA";
+
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 </script>
 
 <!-- LOGIN -->
 <div id="loginPage" class="card">
-<h2>Login</h2>
-<input id="username" placeholder="Username">
-<input id="password" type="password" placeholder="Password">
-<br><br>
-<button class="primary" onclick="login()">Login</button>
+  <h2>Admin Login</h2>
+  <input id="username" placeholder="Username">
+  <input id="password" type="password" placeholder="Password">
+  <br><br>
+  <button class="primary" onclick="login()">Login</button>
 </div>
 
-<!-- MAIN -->
+<!-- MAIN PAGE -->
 <div id="mainPage" class="card hidden">
-<h2>Student System</h2>
+  <h2>Student Management</h2>
 
-<input id="code" placeholder="Code">
-<input id="name" placeholder="Name">
+  <input id="code" placeholder="Code">
+  <input id="name" placeholder="Name">
+  <select id="section">
+    <option value="">Select Section</option>
+    <option>3rd Prep</option>
+    <option>Sec 1</option>
+    <option>Sec 2</option>
+    <option>Sec 3</option>
+  </select>
 
-<select id="section">
-<option value="">Section</option>
-<option>3rd Prep</option>
-<option>Sec 1</option>
-<option>Sec 2</option>
-<option>Sec 3</option>
-</select>
+  <input id="studentphone" placeholder="Student Phone">
+  <input id="parentphone" placeholder="Parent Phone">
 
-<input id="studentphone" placeholder="Student Phone">
-<input id="parentphone" placeholder="Parent Phone">
+  <select id="homework">
+    <option value="">Homework</option>
+    <option>Done</option>
+    <option>Not Done</option>
+  </select>
 
-<select id="homework">
-<option value="">Homework</option>
-<option>Done</option>
-<option>Not Done</option>
-</select>
+  <select id="attendance">
+    <option value="">Attendance</option>
+    <option>Present</option>
+    <option>Absent</option>
+  </select>
 
-<select id="attendance">
-<option value="">Attendance</option>
-<option>Present</option>
-<option>Absent</option>
-</select>
+  <input id="quiz" type="number" placeholder="Quiz">
 
-<input id="quiz" placeholder="Quiz">
+  <br><br>
+  <button class="primary" onclick="saveStudent()">Save Student</button>
+  <button class="danger" onclick="logout()">Logout</button>
 
-<br><br>
-<button class="primary" onclick="saveStudent()">Save Student</button>
-<button class="danger" onclick="logout()">Logout</button>
-
-<table>
-<thead>
-<tr>
-<th>Code</th>
-<th>Name</th>
-<th>Section</th>
-<th>Student Phone</th>
-<th>Parent Phone</th>
-<th>Homework</th>
-<th>Attendance</th>
-<th>Quiz</th>
-<th>Actions</th>
-</tr>
-</thead>
-<tbody id="dataTable"></tbody>
-</table>
+  <table>
+    <thead>
+      <tr>
+        <th>Code</th>
+        <th>Name</th>
+        <th>Section</th>
+        <th>Student Phone</th>
+        <th>Parent Phone</th>
+        <th>Homework</th>
+        <th>Attendance</th>
+        <th>Quiz</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="dataTable"></tbody>
+  </table>
 </div>
 
 <script>
+// Admin credentials
 const admins = [
-  {user:"sayed", pass:"sayed"},
-  {user:"omar", pass:"omar"}
+  { user: "sayed", pass: "sayed" },
+  { user: "omar", pass: "omar" }
 ];
 
-let editId=null;
+let editId = null;
 
 // LOGIN
-function login(){
-  const u = document.getElementById("username").value.trim();
-  const p = document.getElementById("password").value.trim();
-  const ok = admins.find(a=>a.user===u && a.pass===p);
-  if(ok){
+function login() {
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value.trim();
+  const ok = admins.find(a => a.user === username && a.pass === password);
+  if(ok) {
     document.getElementById("loginPage").classList.add("hidden");
     document.getElementById("mainPage").classList.remove("hidden");
     loadTable();
-  } else alert("Wrong login");
+  } else alert("Wrong login credentials");
 }
 
-function logout(){ location.reload(); }
+// LOGOUT
+function logout() {
+  location.reload();
+}
 
 // SAVE STUDENT
-async function saveStudent(){
+async function saveStudent() {
   const code = document.getElementById("code").value.trim();
   const name = document.getElementById("name").value.trim();
   const section = document.getElementById("section").value;
@@ -140,38 +153,48 @@ async function saveStudent(){
   const parentphone = document.getElementById("parentphone").value.trim();
   const homework = document.getElementById("homework").value;
   const attendance = document.getElementById("attendance").value;
-  const quiz = document.getElementById("quiz").value.trim();
+  const quiz = document.getElementById("quiz").value;
 
-  if(!code || !name || !section){
-    alert("Code, Name, Section required");
+  if(!code || !name || !section || !studentphone || !parentphone || !homework || !attendance || !quiz){
+    alert("Please fill all fields");
     return;
   }
 
   let res;
   if(editId){
-    res = await supabase.from("students").update({code,name,section,studentphone,parentphone,homework,attendance,quiz}).eq("id",editId);
-    editId=null;
+    res = await supabase.from("students")
+      .update({code,name,section,studentphone,parentphone,homework,attendance,quiz})
+      .eq("id", editId);
+    editId = null;
   } else {
-    res = await supabase.from("students").insert([{code,name,section,studentphone,parentphone,homework,attendance,quiz}]);
+    res = await supabase.from("students")
+      .insert([{code,name,section,studentphone,parentphone,homework,attendance,quiz}]);
   }
 
-  if(res.error){ console.error(res.error); alert("Error: "+res.error.message); return; }
+  if(res.error){
+    console.error(res.error);
+    alert("Error: "+res.error.message);
+    return;
+  }
 
   clearFields();
   loadTable();
 }
 
 // LOAD TABLE
-async function loadTable(){
-  const {data,error} = await supabase.from("students").select("*");
-  if(error){ console.error(error); return; }
+async function loadTable() {
+  const { data, error } = await supabase.from("students").select("*");
+  if(error){
+    console.error(error);
+    return;
+  }
 
   const table = document.getElementById("dataTable");
-  table.innerHTML="";
+  table.innerHTML = "";
 
-  data.forEach(s=>{
-    table.innerHTML += `
-    <tr>
+  data.forEach(s => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
       <td>${s.code}</td>
       <td>${s.name}</td>
       <td>${s.section}</td>
@@ -184,36 +207,38 @@ async function loadTable(){
         <button onclick="editStudent(${s.id})">Edit</button>
         <button class="danger" onclick="deleteStudent(${s.id})">Delete</button>
       </td>
-    </tr>`;
+    `;
+    table.appendChild(row);
   });
-}
-
-// EDIT STUDENT
-async function editStudent(id){
-  const {data,error} = await supabase.from("students").select("*").eq("id",id).single();
-  if(error){ console.error(error); return; }
-
-  editId = id;
-  document.getElementById("code").value=data.code;
-  document.getElementById("name").value=data.name;
-  document.getElementById("section").value=data.section;
-  document.getElementById("studentphone").value=data.studentphone;
-  document.getElementById("parentphone").value=data.parentphone;
-  document.getElementById("homework").value=data.homework;
-  document.getElementById("attendance").value=data.attendance;
-  document.getElementById("quiz").value=data.quiz;
 }
 
 // DELETE STUDENT
 async function deleteStudent(id){
-  const {error} = await supabase.from("students").delete().eq("id",id);
+  const { error } = await supabase.from("students").delete().eq("id", id);
   if(error){ console.error(error); return; }
   loadTable();
 }
 
+// EDIT STUDENT
+async function editStudent(id){
+  const { data, error } = await supabase.from("students").select("*").eq("id", id).single();
+  if(error){ console.error(error); return; }
+
+  editId = id;
+  document.getElementById("code").value = data.code;
+  document.getElementById("name").value = data.name;
+  document.getElementById("section").value = data.section;
+  document.getElementById("studentphone").value = data.studentphone;
+  document.getElementById("parentphone").value = data.parentphone;
+  document.getElementById("homework").value = data.homework;
+  document.getElementById("attendance").value = data.attendance;
+  document.getElementById("quiz").value = data.quiz;
+}
+
 // CLEAR FORM
-function clearFields(){
-  document.querySelectorAll("input,select").forEach(e=>e.value="");
+function clearFields() {
+  document.querySelectorAll("input, select").forEach(el => el.value = "");
+  editId = null;
 }
 </script>
 
